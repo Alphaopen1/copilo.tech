@@ -1,109 +1,83 @@
 'use client'
 
-const t = {
+const T = {
   fr: {
-    badge: 'Comment ça marche',
-    title: 'Opérationnel en',
-    title2: '3 étapes.',
+    label: '// PROTOCOLE',
+    title: '3 ÉTAPES.\nC\'EST TOUT.',
     steps: [
-      {
-        num: '01',
-        color: 'from-blue-500 to-cyan-400',
-        title: 'Démarre sur Telegram',
-        desc: 'Lance @Copilo_bot sur Telegram. Présente-toi — Copilo enregistre ton profil chiffré en moins de 30 secondes.',
-        detail: 'Aucun formulaire. Aucune carte bancaire. Juste ta voix.',
-      },
-      {
-        num: '02',
-        color: 'from-violet-500 to-pink-400',
-        title: 'Parle naturellement',
-        desc: 'Appuie sur le micro et dis ce que tu veux faire. Créer une course, modifier un détail, connaître ton CA du jour.',
-        detail: '"Ajoute une course pour Mme Hamida demain à 9h Nice → Cannes"',
-      },
-      {
-        num: '03',
-        color: 'from-cyan-500 to-emerald-400',
-        title: 'Copilo gère tout',
-        desc: 'Confirmation, calcul du CA CPAM, péages, calendrier, co-passagers, retours — tout est automatique.',
-        detail: 'Tu conduis. Copilo s\'occupe du reste.',
-      },
+      { n: '01', color: '#1d5cff', title: 'Lance @Copilo_bot', desc: 'Sur Telegram. Présente-toi en 30 secondes. Aucun formulaire, aucune carte.' },
+      { n: '02', color: '#00cfff', title: 'Parle naturellement', desc: '"Ajoute une course demain 9h Nice → Cannes pour Mme Dupont." C\'est tout.' },
+      { n: '03', color: '#f97316', title: 'Copilo gère tout', desc: 'CA CPAM, péages, calendrier, co-passagers, retours. Tu conduis, il s\'occupe du reste.' },
     ],
   },
   en: {
-    badge: 'How it works',
-    title: 'Up and running in',
-    title2: '3 steps.',
+    label: '// PROTOCOL',
+    title: '3 STEPS.\nTHAT\'S IT.',
     steps: [
-      {
-        num: '01',
-        color: 'from-blue-500 to-cyan-400',
-        title: 'Start on Telegram',
-        desc: 'Launch @Copilo_bot on Telegram. Introduce yourself — Copilo records your encrypted profile in under 30 seconds.',
-        detail: 'No form. No credit card. Just your voice.',
-      },
-      {
-        num: '02',
-        color: 'from-violet-500 to-pink-400',
-        title: 'Speak naturally',
-        desc: 'Press the mic and say what you want to do. Create a ride, edit a detail, check today\'s revenue.',
-        detail: '"Add a ride for Ms Hamida tomorrow at 9am Nice → Cannes"',
-      },
-      {
-        num: '03',
-        color: 'from-cyan-500 to-emerald-400',
-        title: 'Copilo handles it all',
-        desc: 'Confirmation, CPAM revenue, tolls, calendar, shared rides, return trips — everything is automatic.',
-        detail: 'You drive. Copilo takes care of the rest.',
-      },
+      { n: '01', color: '#1d5cff', title: 'Launch @Copilo_bot', desc: 'On Telegram. Introduce yourself in 30 seconds. No form, no card.' },
+      { n: '02', color: '#00cfff', title: 'Speak naturally', desc: '"Add a ride tomorrow 9am Nice → Cannes for Ms Dupont." That\'s it.' },
+      { n: '03', color: '#f97316', title: 'Copilo handles all', desc: 'Revenue, tolls, calendar, shared rides, returns. You drive, it does the rest.' },
     ],
   },
 }
 
 export default function HowItWorks({ lang }: { lang: 'fr' | 'en' }) {
-  const tr = t[lang]
+  const tr = T[lang]
   return (
-    <section id="how" className="relative py-24 px-6 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-violet-600/5 blur-3xl pointer-events-none" />
+    <section id="how" style={{ padding: '100px 0', background: 'rgba(255,255,255,0.012)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,5vw,40px)' }}>
 
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 bg-violet-500/10 mb-6">
-            {tr.badge}
-          </span>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight">
-            <span className="text-white">{tr.title}</span>
-            <br />
-            <span className="gradient-text-warm">{tr.title2}</span>
-          </h2>
-        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 60, alignItems: 'flex-start' }}>
 
-        {/* Steps */}
-        <div className="grid md:grid-cols-3 gap-8">
-          {tr.steps.map((step, i) => (
-            <div key={step.num} className="relative">
-              {/* Connector line */}
-              {i < tr.steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-full w-full h-px bg-gradient-to-r from-white/10 to-transparent -translate-y-1/2 z-0" />
-              )}
+          {/* Left: title */}
+          <div style={{ flex: '0 0 260px' }}>
+            <div className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'rgba(0,207,255,0.7)', marginBottom: 16 }}>
+              {tr.label}
+            </div>
+            <h2 className="display" style={{ fontSize: 'clamp(40px,5vw,64px)', color: '#f0f4ff', whiteSpace: 'pre-line' }}>
+              {tr.title}
+            </h2>
+          </div>
 
-              <div className="relative z-10">
-                {/* Number */}
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center mb-6`}>
-                  <span className="text-white font-black text-xl">{step.num}</span>
+          {/* Right: steps */}
+          <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {tr.steps.map((s, i) => (
+              <div key={s.n} style={{ display: 'flex', gap: 24, paddingBottom: i < 2 ? 40 : 0, position: 'relative' }}>
+                {/* Vertical line */}
+                {i < 2 && (
+                  <div style={{
+                    position: 'absolute', left: 20, top: 52, bottom: 0, width: 1,
+                    background: `linear-gradient(to bottom, ${s.color}44, transparent)`,
+                  }} />
+                )}
+
+                {/* Number badge */}
+                <div style={{
+                  width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                  background: `${s.color}18`,
+                  border: `1px solid ${s.color}44`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: "'DM Mono', monospace", fontWeight: 500, fontSize: 14,
+                  color: s.color,
+                }}>
+                  {s.n}
                 </div>
 
-                <h3 className="text-white font-bold text-xl mb-3">{step.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-4">{step.desc}</p>
-
-                {/* Detail bubble */}
-                <div className="glass rounded-xl px-4 py-3 text-xs text-gray-300 italic border-l-2 border-blue-500/40">
-                  {step.detail}
+                <div style={{ paddingTop: 8 }}>
+                  <h3 style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 700, fontSize: 22, textTransform: 'uppercase',
+                    letterSpacing: '0.02em', color: '#f0f4ff', marginBottom: 8,
+                  }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ fontSize: 15, color: 'rgba(180,200,255,0.5)', lineHeight: 1.7 }}>
+                    {s.desc}
+                  </p>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

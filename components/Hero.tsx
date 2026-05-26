@@ -1,214 +1,352 @@
 'use client'
+import { useState, useEffect } from 'react'
 
-const t = {
+/* ── Translations ───────────────────────────────────────────────────── */
+const T = {
   fr: {
-    badge: 'Propulsé par l\'IA · 100% européen · RGPD',
-    headline1: 'Ton copilote vocal',
-    headline2: 'de route.',
-    sub: 'L\'assistant intelligent qui écoute, apprend et agit pour toi — pendant que tu conduis. Chiffré en Europe, conçu pour les pros.',
+    tag: 'Propulsé par l\'IA · Chiffrement EU · RGPD',
+    h1a: 'Ton copilote',
+    h1b: 'vocal de route.',
     cta1: 'Rejoindre sur Telegram',
     cta2: 'Liste d\'attente',
-    orSay: 'ou dis simplement :',
-    voiceCmd: '"Salut Copilo..."',
-    stats: [
-      { value: '100%', label: 'Chiffré EU' },
-      { value: 'RGPD', label: 'Conforme' },
-      { value: 'IA', label: 'Propulsé' },
-      { value: '24/7', label: 'Disponible' },
+    hint: 'ou dis simplement',
+    voice: '"Salut Copilo"',
+    messages: [
+      { role: 'u', text: '🎙️ Ajoute une course demain 9h, Nice → Cannes, Mme Dupont' },
+      { role: 'c', text: '📅 Course #42\n• 15/06 à 09:00 — Mme Dupont\n• Nice → Cannes · ⏱ 35 min\n• 💰 CA CPAM 46.20 € + 🛣️ 3.70 €' },
+      { role: 'u', text: '✅ Confirme' },
+      { role: 'c', text: '✅ Course #42 créée\n📅 Ajouté à Google Calendar' },
     ],
   },
   en: {
-    badge: 'Powered by AI · 100% European · GDPR',
-    headline1: 'Your intelligent voice',
-    headline2: 'road copilot.',
-    sub: 'The smart assistant that listens, learns and acts for you — while you drive. Encrypted in Europe, built for professionals.',
+    tag: 'Powered by AI · EU Encryption · GDPR',
+    h1a: 'Your intelligent',
+    h1b: 'voice copilot.',
     cta1: 'Join on Telegram',
     cta2: 'Join Waitlist',
-    orSay: 'or simply say:',
-    voiceCmd: '"Hey Copilo..."',
-    stats: [
-      { value: '100%', label: 'EU Encrypted' },
-      { value: 'GDPR', label: 'Compliant' },
-      { value: 'AI', label: 'Powered' },
-      { value: '24/7', label: 'Available' },
+    hint: 'or simply say',
+    voice: '"Hey Copilo"',
+    messages: [
+      { role: 'u', text: '🎙️ Add a ride tomorrow 9am, Nice → Cannes, Ms Dupont' },
+      { role: 'c', text: '📅 Ride #42\n• Jun 15 at 09:00 — Ms Dupont\n• Nice → Cannes · ⏱ 35 min\n• 💰 Revenue €46.20 + 🛣️ €3.70' },
+      { role: 'u', text: '✅ Confirm' },
+      { role: 'c', text: '✅ Ride #42 created\n📅 Added to Google Calendar' },
     ],
   },
 }
 
+/* ── Helper ─────────────────────────────────────────────────────────── */
+function useTypingMessages(messages: { role: string; text: string }[]) {
+  const [visible, setVisible] = useState(1)
+  useEffect(() => {
+    if (visible >= messages.length) return
+    const t = setTimeout(() => setVisible(v => v + 1), 1800)
+    return () => clearTimeout(t)
+  }, [visible, messages.length])
+  useEffect(() => { setVisible(1) }, [messages])
+  return visible
+}
+
+/* ── Component ───────────────────────────────────────────────────────── */
 export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
-  const tr = t[lang]
+  const tr = T[lang]
+  const visibleMsgs = useTypingMessages(tr.messages)
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-16 px-6 overflow-hidden">
-      {/* Hero glow background */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-hero-glow pointer-events-none" />
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-violet-600/10 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-48 h-48 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+    <section className="relative w-full min-h-screen flex flex-col items-center justify-end pb-0 overflow-hidden atmo-bg">
 
-      <div className="relative z-10 flex flex-col lg:flex-row items-center gap-16 max-w-6xl w-full mx-auto">
-        {/* Left: text */}
-        <div className="flex-1 text-center lg:text-left">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-medium text-cyan-400 mb-8 border border-cyan-500/20">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse-slow" />
-            {tr.badge}
+      {/* ── Stars ── */}
+      <div className="stars" />
+
+      {/* ── Horizon glow (comes from behind the phone top) ── */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+        style={{
+          top: '-80px',
+          width: '900px',
+          height: '500px',
+          background: 'radial-gradient(ellipse 60% 60% at 50% 0%, rgba(29,92,255,0.45) 0%, rgba(0,207,255,0.15) 40%, transparent 70%)',
+          filter: 'blur(2px)',
+        }}
+      />
+
+      {/* ── Phone + overlay text container ── */}
+      <div className="relative z-10 flex flex-col items-center w-full" style={{ minHeight: '100vh' }}>
+
+        {/* Phone shell — takes up most of the screen like facilpay.io */}
+        <div
+          className="relative mx-auto float"
+          style={{
+            width: 'min(420px, 88vw)',
+            height: 'min(820px, 88vh)',
+            marginTop: 'clamp(70px, 10vh, 100px)',
+          }}
+        >
+          {/* Outer ring glow */}
+          <div
+            className="absolute inset-0 rounded-[52px] pointer-events-none"
+            style={{
+              boxShadow:
+                '0 0 0 1px rgba(255,255,255,0.06), 0 0 80px rgba(29,92,255,0.25), 0 40px 160px rgba(0,207,255,0.08)',
+            }}
+          />
+
+          {/* Phone body */}
+          <div
+            className="relative w-full h-full overflow-hidden"
+            style={{
+              borderRadius: '48px',
+              background: 'linear-gradient(175deg, #0d1829 0%, #060c18 50%, #040810 100%)',
+              border: '1px solid rgba(255,255,255,0.09)',
+            }}
+          >
+            {/* Scanline effect */}
+            <div
+              className="scanline absolute left-0 right-0 pointer-events-none"
+              style={{
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent, rgba(29,92,255,0.3), transparent)',
+                zIndex: 10,
+                top: 0,
+              }}
+            />
+
+            {/* Top notch */}
+            <div className="flex justify-center pt-4">
+              <div
+                className="flex items-center gap-2 px-4 py-1.5"
+                style={{
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: '20px',
+                }}
+              >
+                <span className="ring-dot" />
+                <span className="mono text-[10px]" style={{ color: 'rgba(0,207,255,0.8)' }}>COPILO · EN LIGNE</span>
+              </div>
+            </div>
+
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-5 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div
+                style={{
+                  width: 36, height: 36, borderRadius: 12,
+                  background: 'linear-gradient(135deg, #1d5cff 0%, #00cfff 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 900, fontSize: 16, color: '#fff',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  boxShadow: '0 0 16px rgba(29,92,255,0.5)',
+                }}
+              >
+                C
+              </div>
+              <div>
+                <div className="font-semibold text-sm" style={{ color: '#f0f4ff' }}>Copilo</div>
+                <div className="flex items-center gap-1.5">
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+                  <span className="mono text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>vocal · actif</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex flex-col gap-3 px-4 py-4" style={{ height: 'calc(100% - 180px)', overflowY: 'hidden' }}>
+              {tr.messages.slice(0, visibleMsgs).map((m, i) => (
+                <div
+                  key={`${lang}-${i}`}
+                  className={`msg-in flex ${m.role === 'u' ? 'justify-end' : 'justify-start'}`}
+                  style={{ animationDelay: `${i * 0.08}s` }}
+                >
+                  <div
+                    style={{
+                      maxWidth: '88%',
+                      padding: '9px 13px',
+                      borderRadius: m.role === 'u' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                      fontSize: 11,
+                      lineHeight: 1.6,
+                      whiteSpace: 'pre-line',
+                      fontFamily: "'Barlow', sans-serif",
+                      ...(m.role === 'u'
+                        ? {
+                            background: 'linear-gradient(135deg, #1d5cff, #1040c0)',
+                            color: '#fff',
+                            boxShadow: '0 2px 12px rgba(29,92,255,0.35)',
+                          }
+                        : {
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            color: 'rgba(240,244,255,0.9)',
+                          }),
+                    }}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+
+              {/* Typing indicator */}
+              {visibleMsgs < tr.messages.length && (
+                <div className="flex justify-start">
+                  <div
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '18px 18px 18px 4px',
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      display: 'flex', gap: 4, alignItems: 'center',
+                    }}
+                  >
+                    {[0, 0.2, 0.4].map((d, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          width: 6, height: 6, borderRadius: '50%',
+                          background: 'rgba(29,92,255,0.7)',
+                          display: 'inline-block',
+                          animation: `blink 1.2s ${d}s ease-in-out infinite`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom mic bar */}
+            <div
+              className="absolute bottom-0 left-0 right-0 flex items-center gap-3 px-4"
+              style={{
+                height: 68,
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                background: 'rgba(4,8,15,0.97)',
+              }}
+            >
+              <div
+                style={{
+                  flex: 1, height: 38, borderRadius: 19,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  display: 'flex', alignItems: 'center', paddingLeft: 14,
+                }}
+              >
+                <span className="mono text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  Message...
+                </span>
+              </div>
+              <MicButton />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Headline overlay — floats over / below phone ─────────────── */}
+        <div
+          className="relative z-20 flex flex-col items-center text-center w-full"
+          style={{ marginTop: '-20px', paddingBottom: '60px' }}
+        >
+          {/* Tag */}
+          <div
+            className="mono fade-up delay-1 mb-5 px-4 py-2 rounded-full"
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              color: 'rgba(0,207,255,0.75)',
+              background: 'rgba(0,207,255,0.06)',
+              border: '1px solid rgba(0,207,255,0.18)',
+            }}
+          >
+            {tr.tag}
           </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-            <span className="text-white">{tr.headline1}</span>
+          {/* H1 */}
+          <h1
+            className="display fade-up delay-2"
+            style={{
+              fontSize: 'clamp(52px, 9vw, 96px)',
+              color: '#f0f4ff',
+              textShadow: '0 0 80px rgba(29,92,255,0.2)',
+              maxWidth: '700px',
+              padding: '0 20px',
+            }}
+          >
+            <span>{tr.h1a}</span>
             <br />
-            <span className="gradient-text">{tr.headline2}</span>
+            <span className="gt-blue">{tr.h1b}</span>
           </h1>
 
-          {/* Sub */}
-          <p className="text-lg text-gray-400 leading-relaxed mb-10 max-w-lg mx-auto lg:mx-0">
-            {tr.sub}
-          </p>
-
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
+          <div className="fade-up delay-3 flex flex-col sm:flex-row gap-4 mt-8 px-6">
             <a
               href="https://t.me/copilo_bot"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary flex items-center justify-center gap-3 px-7 py-4 rounded-2xl font-semibold text-white text-base"
+              className="btn-primary flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 17, letterSpacing: '0.03em' }}
             >
-              <TelegramIcon />
+              <TgIcon />
               {tr.cta1}
             </a>
             <a
               href="#waitlist"
-              className="btn-secondary flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-semibold text-white text-base"
+              className="btn-ghost flex items-center justify-center px-8 py-4 rounded-2xl font-semibold text-white"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 17, letterSpacing: '0.03em' }}
             >
               {tr.cta2}
             </a>
           </div>
 
           {/* Voice hint */}
-          <div className="flex items-center gap-3 justify-center lg:justify-start text-gray-500 text-sm">
+          <div
+            className="fade-up delay-4 flex items-center gap-3 mt-6"
+            style={{ color: 'rgba(180,200,255,0.45)', fontSize: 13 }}
+          >
             <MicIcon />
-            <span>{tr.orSay}</span>
-            <span className="text-white font-medium italic">{tr.voiceCmd}</span>
+            <span>{tr.hint}</span>
+            <span
+              className="mono"
+              style={{ color: 'rgba(240,244,255,0.75)', fontSize: 13 }}
+            >
+              {tr.voice}
+            </span>
           </div>
-
-          {/* Stats row */}
-          <div className="grid grid-cols-4 gap-4 mt-12 pt-10 border-t border-white/5">
-            {tr.stats.map((s) => (
-              <div key={s.label} className="text-center lg:text-left">
-                <div className="text-2xl font-black gradient-text">{s.value}</div>
-                <div className="text-xs text-gray-500 mt-1">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Phone mockup */}
-        <div className="flex-shrink-0 relative">
-          <PhoneMockup lang={lang} />
         </div>
       </div>
     </section>
   )
 }
 
-function PhoneMockup({ lang }: { lang: 'fr' | 'en' }) {
-  const messages = lang === 'fr' ? [
-    { from: 'user', text: '🎙️ « Ajoute une course demain à 9h pour Mme Dupont, Nice → Cannes »' },
-    { from: 'copilo', text: '📅 Nouvelle course\n• Quand : 15/06 à 09:00\n• Client : Mme Dupont\n• Trajet : Nice → Cannes\n• ⏱ 35 min — 33.2 km\n• 💰 CA CPAM : 46.20 €' },
-    { from: 'user', text: '✅ Oui' },
-    { from: 'copilo', text: '✅ Course #42 créée !\n📅 Ajouté à Google Calendar' },
-  ] : [
-    { from: 'user', text: '🎙️ "Add a ride tomorrow at 9am for Ms Dupont, Nice → Cannes"' },
-    { from: 'copilo', text: '📅 New ride\n• When: Jun 15 at 09:00\n• Client: Ms Dupont\n• Route: Nice → Cannes\n• ⏱ 35 min — 33.2 km\n• 💰 Revenue: €46.20' },
-    { from: 'user', text: '✅ Yes' },
-    { from: 'copilo', text: '✅ Ride #42 created!\n📅 Added to Google Calendar' },
-  ]
-
+/* ── Sub-components ──────────────────────────────────────────────────── */
+function MicButton() {
   return (
-    <div className="relative w-72 h-[580px]">
-      {/* Outer glow */}
-      <div className="absolute inset-0 rounded-[50px] bg-gradient-to-b from-blue-500/20 to-cyan-500/20 blur-2xl scale-110 animate-pulse-slow" />
-
-      {/* Phone shell */}
-      <div className="relative w-full h-full rounded-[44px] overflow-hidden border border-white/10 shadow-2xl"
-           style={{ background: 'linear-gradient(180deg, #0f1629 0%, #070d1a 100%)' }}>
-
-        {/* Notch */}
-        <div className="flex justify-center pt-4 pb-2">
-          <div className="w-28 h-7 rounded-full bg-black/60 border border-white/10 flex items-center justify-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[9px] text-green-400 font-mono">COPILO ACTIF</span>
-          </div>
-        </div>
-
-        {/* Chat area */}
-        <div className="px-4 py-2 flex flex-col gap-3 overflow-hidden" style={{ height: 'calc(100% - 120px)' }}>
-          {/* Copilo header */}
-          <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white text-xs font-black">C</div>
-            <div>
-              <div className="text-white text-xs font-semibold">Copilo</div>
-              <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                <span className="text-[9px] text-gray-500">en ligne</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Messages */}
-          {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[85%] px-3 py-2 rounded-2xl text-[10px] leading-relaxed whitespace-pre-line ${
-                  m.from === 'user'
-                    ? 'bg-blue-600/80 text-white rounded-br-sm'
-                    : 'bg-white/5 text-gray-200 border border-white/5 rounded-bl-sm'
-                }`}
-              >
-                {m.text}
-              </div>
-            </div>
-          ))}
-
-          {/* Typing indicator */}
-          <div className="flex justify-start">
-            <div className="bg-white/5 border border-white/5 px-3 py-2 rounded-2xl rounded-bl-sm flex gap-1 items-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom mic bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-[72px] border-t border-white/5 flex items-center justify-center gap-4 px-4"
-             style={{ background: 'rgba(3,7,20,0.95)' }}>
-          <div className="flex-1 h-9 rounded-full bg-white/5 border border-white/10 flex items-center px-3">
-            <span className="text-[10px] text-gray-600">Message...</span>
-          </div>
-          <button className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center glow-blue">
-            <MicIconSm />
-          </button>
-        </div>
-      </div>
-
-      {/* Floating orbit elements */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 pointer-events-none">
-        <div className="orbit absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="w-3 h-3 rounded-full bg-cyan-400/60" />
-        </div>
-        <div className="orbit-slow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ animationDelay: '-4s' }}>
-          <div className="w-2 h-2 rounded-full bg-violet-400/60" />
-        </div>
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 38, height: 38 }}>
+      {/* Pulse rings */}
+      {[1, 2, 3].map((_, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 rounded-full`}
+          style={{
+            border: '1px solid rgba(29,92,255,0.5)',
+            animation: `ring 2s ease-out ${i * 0.7}s infinite`,
+          }}
+        />
+      ))}
+      <div
+        style={{
+          width: 38, height: 38, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #1d5cff, #00cfff)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 20px rgba(29,92,255,0.5)',
+          position: 'relative', zIndex: 2,
+        }}
+      >
+        <MicIconSm />
       </div>
     </div>
   )
 }
 
-function TelegramIcon() {
+function TgIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
       <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
     </svg>
   )
@@ -216,16 +354,20 @@ function TelegramIcon() {
 
 function MicIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400">
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(29,92,255,0.9)" strokeWidth="2">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" x2="12" y1="19" y2="22"/>
     </svg>
   )
 }
 
 function MicIconSm() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" x2="12" y1="19" y2="22"/>
     </svg>
   )
 }

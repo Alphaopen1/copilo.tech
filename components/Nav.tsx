@@ -1,90 +1,119 @@
 'use client'
-import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
-const t = {
-  fr: {
-    features: 'Fonctionnalités',
-    howItWorks: 'Comment ça marche',
-    telegram: 'Telegram',
-    waitlist: 'Liste d\'attente',
-    cta: 'Commencer',
-  },
-  en: {
-    features: 'Features',
-    howItWorks: 'How it works',
-    telegram: 'Telegram',
-    waitlist: 'Waitlist',
-    cta: 'Get Started',
-  },
+const T = {
+  fr: { links: [['#features','Fonctionnalités'],['#how','Comment'],['#telegram','Telegram'],['#waitlist','Accès']], cta: 'Démarrer' },
+  en: { links: [['#features','Features'],['#how','How'],['#telegram','Telegram'],['#waitlist','Access']], cta: 'Get Started' },
 }
 
 export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l: 'fr' | 'en') => void }) {
+  const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
-  const tr = t[lang]
+  const tr = T[lang]
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', fn)
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 glass border-b border-white/5">
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      style={{
+        padding: '0 clamp(16px, 4vw, 40px)',
+        height: 60,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: scrolled ? 'rgba(4,8,15,0.85)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : 'none',
+      }}
+    >
       {/* Logo */}
-      <a href="#" className="flex items-center gap-2 group">
-        <div className="relative w-9 h-9">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 opacity-90 group-hover:opacity-100 transition-opacity" />
-          <div className="absolute inset-0 flex items-center justify-center text-white font-black text-lg">C</div>
-        </div>
-        <span className="font-bold text-lg tracking-tight text-white">copilo<span className="text-cyan-400">.</span>tech</span>
+      <a href="#" className="flex items-center gap-2.5" style={{ textDecoration: 'none' }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10,
+          background: 'linear-gradient(135deg, #1d5cff 0%, #00cfff 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontWeight: 900, fontSize: 18, color: '#fff',
+          boxShadow: '0 0 20px rgba(29,92,255,0.4)',
+        }}>C</div>
+        <span style={{
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontWeight: 700, fontSize: 20, color: '#f0f4ff',
+          letterSpacing: '0.02em',
+        }}>
+          COPILO<span style={{ color: '#00cfff' }}>.</span>TECH
+        </span>
       </a>
 
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-8">
-        <a href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">{tr.features}</a>
-        <a href="#how" className="text-sm text-gray-400 hover:text-white transition-colors">{tr.howItWorks}</a>
-        <a href="#telegram" className="text-sm text-gray-400 hover:text-white transition-colors">{tr.telegram}</a>
-        <a href="#waitlist" className="text-sm text-gray-400 hover:text-white transition-colors">{tr.waitlist}</a>
+        {tr.links.map(([href, label]) => (
+          <a key={href} href={href} style={{
+            fontSize: 13, fontWeight: 500, letterSpacing: '0.06em',
+            color: 'rgba(180,200,255,0.55)', textDecoration: 'none',
+            transition: 'color 0.2s', textTransform: 'uppercase',
+            fontFamily: "'Barlow Condensed', sans-serif",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#f0f4ff')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(180,200,255,0.55)')}
+          >
+            {label}
+          </a>
+        ))}
       </div>
 
-      {/* Right side */}
-      <div className="hidden md:flex items-center gap-4">
-        {/* Lang toggle */}
-        <div className="flex items-center gap-1 text-sm font-medium">
-          <button
-            onClick={() => setLang('fr')}
-            className={`px-2 py-1 rounded transition-colors ${lang === 'fr' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            FR
-          </button>
-          <span className="text-gray-700">|</span>
-          <button
-            onClick={() => setLang('en')}
-            className={`px-2 py-1 rounded transition-colors ${lang === 'en' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            EN
-          </button>
+      {/* Right */}
+      <div className="flex items-center gap-4">
+        {/* Lang */}
+        <div className="hidden md:flex items-center gap-1 mono" style={{ fontSize: 12 }}>
+          {(['fr','en'] as const).map((l, i) => (
+            <>
+              {i > 0 && <span key={`sep-${l}`} style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>}
+              <button key={l} onClick={() => setLang(l)} style={{
+                padding: '2px 6px', background: 'none', border: 'none', cursor: 'pointer',
+                color: lang === l ? '#f0f4ff' : 'rgba(255,255,255,0.3)',
+                fontFamily: "'DM Mono', monospace", fontSize: 12,
+                transition: 'color 0.2s', textTransform: 'uppercase',
+              }}>
+                {l}
+              </button>
+            </>
+          ))}
         </div>
-        <a
-          href="#waitlist"
-          className="btn-primary px-5 py-2 rounded-full text-sm font-semibold text-white"
-        >
+
+        <a href="#waitlist" className="hidden md:block btn-primary px-5 py-2 rounded-xl text-white"
+           style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 15, letterSpacing: '0.05em', textDecoration: 'none', textTransform: 'uppercase' }}>
           {tr.cta}
         </a>
-      </div>
 
-      {/* Mobile hamburger */}
-      <button className="md:hidden text-gray-400 hover:text-white" onClick={() => setOpen(!open)}>
-        {open ? <X size={22} /> : <Menu size={22} />}
-      </button>
+        {/* Mobile hamburger */}
+        <button className="md:hidden" onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f0f4ff' }}>
+          {open ? '✕' : '☰'}
+        </button>
+      </div>
 
       {/* Mobile menu */}
       {open && (
-        <div className="absolute top-full left-0 right-0 glass border-t border-white/5 p-6 flex flex-col gap-4 md:hidden">
-          {[['#features', tr.features], ['#how', tr.howItWorks], ['#telegram', tr.telegram], ['#waitlist', tr.waitlist]].map(([href, label]) => (
-            <a key={href} href={href} className="text-gray-300 hover:text-white transition-colors" onClick={() => setOpen(false)}>
+        <div
+          className="absolute top-full left-0 right-0 flex flex-col gap-4 p-6 md:hidden"
+          style={{ background: 'rgba(4,8,15,0.97)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          {tr.links.map(([href, label]) => (
+            <a key={href} href={href} onClick={() => setOpen(false)}
+               style={{ color: 'rgba(180,200,255,0.7)', fontSize: 16, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none' }}>
               {label}
             </a>
           ))}
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => setLang('fr')} className={`text-sm font-medium ${lang === 'fr' ? 'text-white' : 'text-gray-500'}`}>FR</button>
-            <span className="text-gray-700">|</span>
-            <button onClick={() => setLang('en')} className={`text-sm font-medium ${lang === 'en' ? 'text-white' : 'text-gray-500'}`}>EN</button>
+          <div className="flex gap-2">
+            {(['fr','en'] as const).map(l => (
+              <button key={l} onClick={() => setLang(l)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: lang === l ? '#fff' : 'rgba(255,255,255,0.3)', fontFamily: "'DM Mono', monospace", fontSize: 13, textTransform: 'uppercase' }}>
+                {l}
+              </button>
+            ))}
           </div>
         </div>
       )}
