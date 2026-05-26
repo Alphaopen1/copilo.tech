@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const T = {
   fr: { links: [['#features','Fonctionnalités'],['#how','Comment'],['#telegram','Telegram'],['#waitlist','Accès']], cta: 'Démarrer' },
@@ -70,9 +70,9 @@ export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l:
         {/* Lang */}
         <div className="hidden md:flex items-center gap-1 mono" style={{ fontSize: 12 }}>
           {(['fr','en'] as const).map((l, i) => (
-            <>
-              {i > 0 && <span key={`sep-${l}`} style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>}
-              <button key={l} onClick={() => setLang(l)} style={{
+            <React.Fragment key={l}>
+              {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>}
+              <button onClick={() => setLang(l)} style={{
                 padding: '2px 6px', background: 'none', border: 'none', cursor: 'pointer',
                 color: lang === l ? '#f0f4ff' : 'rgba(255,255,255,0.3)',
                 fontFamily: "'DM Mono', monospace", fontSize: 12,
@@ -80,7 +80,7 @@ export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l:
               }}>
                 {l}
               </button>
-            </>
+            </React.Fragment>
           ))}
         </div>
 

@@ -88,7 +88,7 @@ export default function AvatarSection({ lang }: { lang: 'fr' | 'en' }) {
           <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">
             <span className="text-white">{tr.title}</span>
             <br />
-            <span className="gradient-text">{tr.title2}</span>
+            <span className="gt-blue">{tr.title2}</span>
           </h2>
           <p className="text-gray-400 text-lg leading-relaxed mb-8">{tr.sub}</p>
 
@@ -103,7 +103,7 @@ export default function AvatarSection({ lang }: { lang: 'fr' | 'en' }) {
           </div>
 
           <a href="https://t.me/copilo_bot" target="_blank" rel="noopener noreferrer"
-             className="btn-secondary inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-semibold text-white">
+             className="btn-ghost inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-semibold text-white">
             <span>🌍</span>
             {tr.invite}
           </a>
