@@ -17,13 +17,13 @@ const T = {
     micHint: 'Appuie et parle',
     orType: 'ou tape un message…',
     replies: [
-      "Bonjour ! Je suis Copilo 🚗 Je gère tes courses, ton CA CPAM, les péages, les doublets et ton calendrier — tout en vocal, tout en sécurité. Qu'est-ce que je peux faire pour toi ?",
-      "Super ! Pour débloquer la version complète — 3 mois gratuits sur Telegram — j'ai juste besoin de ton prénom et ton numéro 👇",
+      "Bonjour ! Je suis Copilo 🚗\n\nJe crée tes courses, calcule ton CA CPAM, gère les péages et t'alerte sur les doublets — tout en vocal, mains libres.\n\nEssaie un des exemples ↓",
+      "Top ! Pour activer la version complète — 3 mois gratuits — j'ai juste besoin de ton prénom et ton numéro 👇",
     ],
     suggestions: [
-      '🎙 Ajoute une course demain 9h',
-      '📊 Mon CA cette semaine ?',
-      '👥 Cherche des doublets',
+      { text: '🎙 Course Mme Dupont 9h, CHU Grenoble', reply: `✅ *Course créée !*\n📅 Demain 09:00 — Mme Dupont\n🏥 Arrivée : CHU Grenoble\n💰 CA estimé : *34,20 € CPAM*\n\nConfirme ou dis "annule" ?` },
+      { text: '📊 Mon CA cette semaine ?',              reply: `📊 *Semaine du 26 mai*\n✅ 6 courses · 148 km\n💰 CA CPAM : 214,80 €\n🛣️ Péages : 18,00 €\n─────────────\n📦 *Total : 232,80 €*\n📈 +9 % vs semaine passée` },
+      { text: '🛣️ Calcul CA : 38 km depuis Lyon',       reply: `💰 *Estimation CA CPAM*\n📍 Lyon → Dept 69 Rhône\n📏 38,0 km facturables\n💶 Tarif : 1,2100 €/km\n─────────────\n✅ *Total estimé : 59,68 €*` },
     ],
     formTitle: '🚀 Accès prioritaire',
     formSub:   'Pour continuer avec Copilo sur Telegram',
@@ -53,13 +53,13 @@ const T = {
     micHint: 'Press and speak',
     orType: 'or type a message…',
     replies: [
-      "Hi! I'm Copilo 🚗 I handle your rides, CPAM revenue, tolls, shared trips and calendar — all by voice, fully encrypted. What can I do for you?",
-      "Great! To unlock the full version — 3 months free on Telegram — I just need your name and phone 👇",
+      "Hi! I'm Copilo 🚗\n\nI create rides, calculate CPAM revenue, track tolls and alert you on shared trips — all hands-free by voice.\n\nTry one of the examples ↓",
+      "Great! To unlock the full version — 3 months free — I just need your name and phone 👇",
     ],
     suggestions: [
-      '🎙 Add a ride tomorrow 9am',
-      '📊 My revenue this week?',
-      '👥 Find shared rides',
+      { text: '🎙 Ride Mrs. Dupont 9am, Grenoble Hospital', reply: `✅ *Ride created!*\n📅 Tomorrow 09:00 — Mrs. Dupont\n🏥 Dest: Grenoble Hospital\n💰 Estimated: *€34.20 CPAM*\n\nConfirm or say "cancel"?` },
+      { text: '📊 My revenue this week?',                   reply: `📊 *Week of May 26*\n✅ 6 rides · 148 km\n💰 CPAM revenue: €214.80\n🛣️ Tolls: €18.00\n─────────────\n📦 *Total: €232.80*\n📈 +9% vs last week` },
+      { text: '🛣️ Calculate: 38 km from Lyon',             reply: `💰 *CPAM Revenue Estimate*\n📍 Lyon → Dept 69 Rhône\n📏 38.0 billable km\n💶 Rate: €1.2100/km\n─────────────\n✅ *Estimated total: €59.68*` },
     ],
     formTitle: '🚀 Priority access',
     formSub:   'To continue with Copilo on Telegram',
@@ -123,24 +123,30 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
   }, [])
 
   /* ── Bot respond ───────────────────────────────────────────────── */
-  const botRespond = useCallback(async () => {
+  const botRespond = useCallback(async (specificReply?: string) => {
     setTyping(true); setPhase('thinking')
-    await new Promise(r => setTimeout(r, 1000 + Math.random() * 700))
+    await new Promise(r => setTimeout(r, 900 + Math.random() * 600))
     setTyping(false)
-    const idx = Math.min(botCount, tr.replies.length - 1)
-    push('bot', tr.replies[idx])
-    const next = botCount + 1
-    setBotCount(next)
-    if (next >= 2) { await new Promise(r => setTimeout(r, 400)); setPhase('form') }
-    else setPhase('chat')
+    if (specificReply) {
+      push('bot', specificReply)
+      setBotCount(1)
+      setPhase('chat')
+    } else {
+      const idx = Math.min(botCount, tr.replies.length - 1)
+      push('bot', tr.replies[idx])
+      const next = botCount + 1
+      setBotCount(next)
+      if (next >= 2) { await new Promise(r => setTimeout(r, 400)); setPhase('form') }
+      else setPhase('chat')
+    }
   }, [botCount, tr.replies, push])
 
   /* ── Send message ──────────────────────────────────────────────── */
-  const send = useCallback(async (text: string) => {
+  const send = useCallback(async (text: string, specificReply?: string) => {
     if (!text.trim() || phase === 'thinking') return
     push('user', text.trim())
     setTextIn('')
-    await botRespond()
+    await botRespond(specificReply)
   }, [phase, push, botRespond])
 
   /* ── Voice → ouvre Telegram directement ────────────────────────── */
@@ -288,10 +294,10 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
                         </div>
                         <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:5 }}>
                           {tr.suggestions.map(s => (
-                            <button key={s} onClick={() => send(s)} style={{ padding:'7px 10px', borderRadius:10, textAlign:'left', background:'rgba(29,92,255,0.07)', border:'1px solid rgba(29,92,255,0.18)', color:'rgba(180,200,255,0.65)', fontFamily:"'Barlow',sans-serif", fontSize:10.5, cursor:'pointer' }}
+                            <button key={s.text} onClick={() => send(s.text, s.reply)} style={{ padding:'7px 10px', borderRadius:10, textAlign:'left', background:'rgba(29,92,255,0.07)', border:'1px solid rgba(29,92,255,0.18)', color:'rgba(180,200,255,0.65)', fontFamily:"'Barlow',sans-serif", fontSize:10.5, cursor:'pointer' }}
                               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(29,92,255,0.16)')}
                               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(29,92,255,0.07)')}>
-                              {s}
+                              {s.text}
                             </button>
                           ))}
                         </div>

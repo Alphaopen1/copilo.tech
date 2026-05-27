@@ -77,9 +77,9 @@ export default function OnboardPage() {
   const [group, setGroup]         = useState<GroupForm>({ groupName: '', type: 'private', description: '' })
   const [groupErrs, setGroupErrs] = useState<Partial<GroupForm>>({})
   const [groupLoading, setGroupLoading] = useState(false)
-  const [groupResult, setGroupResult]   = useState<{ inviteLink: string; steps?: string[] } | null>(null)
+  const [groupResult, setGroupResult]   = useState<{ inviteLink: string } | null>(null)
   const [groupApiError, setGroupApiError] = useState(false)
-  const groupInvite = groupResult?.inviteLink ?? null
+  const [groupWizardStep, setGroupWizardStep] = useState<1|2|3|4>(1)
 
   /* Admin form state */
   const [admin, setAdmin]         = useState<AdminForm>({ groupHandle: '' })
@@ -126,16 +126,8 @@ export default function OnboardPage() {
     // L'utilisateur choisit son groupe existant → le bot rejoint + s'initialise
     const payload = btoa(`g:${gName}`).slice(0, 60).replace(/=/g, '')
 
-    setGroupResult({
-      inviteLink: `https://t.me/Copilo_TaxiBot?startgroup=${payload}`,
-      steps: [
-        `1. Crée d'abord un groupe Telegram nommé "${gName}" (icône crayon → Nouveau groupe)`,
-        `2. Clique sur le bouton ci-dessous — Telegram va te demander dans quel groupe ajouter @Copilo_TaxiBot`,
-        `3. Sélectionne "${gName}" dans la liste`,
-        '4. Une fois ajouté, nomme @Copilo_TaxiBot administrateur (Gérer les messages)',
-        '5. Le dispatch de courses s\'active automatiquement ✅',
-      ],
-    })
+    setGroupResult({ inviteLink: `https://t.me/Copilo_TaxiBot?startgroup=${payload}` })
+    setGroupWizardStep(1)
     setGroupLoading(false)
   }
 
@@ -523,60 +515,12 @@ export default function OnboardPage() {
                 </h2>
 
                 {groupResult ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{
-                      padding: '20px 24px',
-                      borderRadius: 14,
-                      background: 'rgba(5,150,105,0.08)',
-                      border: '1px solid rgba(5,150,105,0.3)',
-                      color: '#34d399',
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontWeight: 700,
-                      fontSize: 18,
-                    }}>
-                      ✅ Groupe configuré !
-                    </div>
-                    {groupResult.steps && (
-                      <div style={{
-                        padding: '14px 18px',
-                        borderRadius: 10,
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 8,
-                      }}>
-                        {groupResult.steps.map((s, i) => (
-                          <div key={i} style={{ fontFamily: "'Barlow', sans-serif", fontSize: 13, color: 'rgba(180,200,255,0.7)', lineHeight: 1.5 }}>
-                            {s}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <a
-                      href={groupResult.inviteLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        padding: '14px 28px',
-                        borderRadius: 12,
-                        fontFamily: "'Barlow Condensed', sans-serif",
-                        fontWeight: 700,
-                        fontSize: 17,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        color: '#fff',
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <TgIcon /> Ajouter @Copilo_TaxiBot à mon groupe →
-                    </a>
-                  </div>
+                  <GroupWizard
+                    groupName={group.groupName.trim()}
+                    inviteLink={groupResult.inviteLink}
+                    step={groupWizardStep}
+                    onAdvance={(s) => setGroupWizardStep(s)}
+                  />
                 ) : groupApiError ? (
                   <NotReady />
                 ) : (
@@ -862,5 +806,249 @@ function TgIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
       <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
     </svg>
+  )
+}
+
+/* ── Group Wizard ──────────────────────────────────────────────────── */
+function GroupWizard({
+  groupName,
+  inviteLink,
+  step,
+  onAdvance,
+}: {
+  groupName: string
+  inviteLink: string
+  step: 1 | 2 | 3 | 4
+  onAdvance: (s: 1 | 2 | 3 | 4) => void
+}) {
+  const steps = [
+    {
+      num: 1,
+      icon: '📱',
+      title: 'Crée le groupe Telegram',
+      desc: <>Dans Telegram : icône ✏️ en haut à droite → <strong style={{ color: '#f0f4ff' }}>Nouveau groupe</strong> → nomme-le <strong style={{ color: '#00cfff' }}>&ldquo;{groupName}&rdquo;</strong> et ajoute au moins un contact.</>,
+      cta: null as null | { label: string; href?: string; onClick?: () => void },
+      confirm: 'Groupe créé →',
+    },
+    {
+      num: 2,
+      icon: '🤖',
+      title: 'Ajoute @Copilo_TaxiBot',
+      desc: <>Clique sur le bouton — Telegram affiche tes groupes. Sélectionne <strong style={{ color: '#00cfff' }}>&ldquo;{groupName}&rdquo;</strong> et valide.</>,
+      cta: { label: 'Ajouter @Copilo_TaxiBot dans mon groupe', href: inviteLink },
+      confirm: 'Bot ajouté →',
+    },
+    {
+      num: 3,
+      icon: '🔑',
+      title: 'Nomme Copilo administrateur',
+      desc: <>Dans ton groupe : <strong style={{ color: '#f0f4ff' }}>tape sur @Copilo_TaxiBot</strong> → Promouvoir admin → active <strong style={{ color: '#f0f4ff' }}>Gérer les messages</strong>. Indispensable pour le dispatch.</>,
+      cta: null,
+      confirm: 'Admin configuré ✅',
+    },
+  ]
+
+  if (step === 4) {
+    return (
+      <div style={{
+        padding: '28px 24px',
+        borderRadius: 14,
+        background: 'rgba(5,150,105,0.08)',
+        border: '1px solid rgba(5,150,105,0.35)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        animation: 'fadeUp 0.35s ease forwards',
+      }}>
+        <div style={{ fontSize: 32 }}>🎉</div>
+        <div style={{
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontWeight: 800,
+          fontSize: 22,
+          color: '#34d399',
+          textTransform: 'uppercase',
+          letterSpacing: '0.03em',
+        }}>
+          Groupe prêt !
+        </div>
+        <p style={{
+          fontFamily: "'Barlow', sans-serif",
+          fontSize: 14,
+          color: 'rgba(180,200,255,0.65)',
+          lineHeight: 1.6,
+          margin: 0,
+        }}>
+          @Copilo_TaxiBot est actif dans <strong style={{ color: '#f0f4ff' }}>&ldquo;{groupName}&rdquo;</strong>.<br />
+          Le dispatch de courses s'active automatiquement. 🚗
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* Progress bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 28 }}>
+        {[1, 2, 3].map((n, i) => {
+          const done = step > n
+          const active = step === n
+          return (
+            <div key={n} style={{ display: 'flex', alignItems: 'center', flex: n < 3 ? 1 : 'none' }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: done ? 14 : 12,
+                fontWeight: 700,
+                background: done
+                  ? 'rgba(52,211,153,0.2)'
+                  : active
+                  ? 'rgba(29,92,255,0.25)'
+                  : 'rgba(255,255,255,0.04)',
+                border: done
+                  ? '1.5px solid rgba(52,211,153,0.6)'
+                  : active
+                  ? '1.5px solid rgba(29,92,255,0.7)'
+                  : '1.5px solid rgba(255,255,255,0.1)',
+                color: done ? '#34d399' : active ? '#60a5fa' : 'rgba(180,200,255,0.3)',
+                transition: 'all 0.3s',
+                boxShadow: active ? '0 0 14px rgba(29,92,255,0.25)' : 'none',
+              }}>
+                {done ? '✓' : n}
+              </div>
+              {i < 2 && (
+                <div style={{
+                  flex: 1, height: 1.5, margin: '0 4px',
+                  background: step > n + 1
+                    ? 'rgba(52,211,153,0.4)'
+                    : step > n
+                    ? 'linear-gradient(to right, rgba(52,211,153,0.4), rgba(29,92,255,0.25))'
+                    : 'rgba(255,255,255,0.07)',
+                  transition: 'all 0.4s',
+                }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Active step */}
+      {steps.filter(s => s.num === step).map(st => (
+        <div key={st.num} style={{
+          padding: '24px 22px',
+          borderRadius: 14,
+          background: 'rgba(29,92,255,0.06)',
+          border: '1px solid rgba(29,92,255,0.22)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          animation: 'fadeUp 0.35s ease forwards',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 22 }}>{st.icon}</span>
+            <div style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: 19,
+              color: '#f0f4ff',
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+            }}>
+              Étape {st.num} — {st.title}
+            </div>
+          </div>
+
+          <p style={{
+            fontFamily: "'Barlow', sans-serif",
+            fontSize: 13.5,
+            color: 'rgba(180,200,255,0.7)',
+            lineHeight: 1.65,
+            margin: 0,
+          }}>
+            {st.desc}
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Optional Telegram CTA (step 2) */}
+            {st.cta && st.cta.href && (
+              <a
+                href={st.cta.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  padding: '13px 20px',
+                  borderRadius: 12,
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: '#fff',
+                  textDecoration: 'none',
+                }}
+              >
+                <TgIcon /> {st.cta.label}
+              </a>
+            )}
+
+            {/* Confirm / advance */}
+            <button
+              onClick={() => onAdvance((step + 1) as 1 | 2 | 3 | 4)}
+              style={{
+                padding: '12px 20px',
+                borderRadius: 12,
+                border: `1.5px solid ${step === 2 ? 'rgba(52,211,153,0.35)' : 'rgba(29,92,255,0.35)'}`,
+                background: step === 2 ? 'rgba(52,211,153,0.06)' : 'rgba(29,92,255,0.08)',
+                color: step === 2 ? '#34d399' : '#60a5fa',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: 15,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.85' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            >
+              {st.confirm}
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* Future steps (collapsed) */}
+      {steps.filter(s => s.num > step).map(st => (
+        <div key={st.num} style={{
+          padding: '14px 22px',
+          borderRadius: 12,
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid rgba(255,255,255,0.05)',
+          marginTop: 8,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          opacity: 0.45,
+        }}>
+          <span style={{ fontSize: 16 }}>{st.icon}</span>
+          <div style={{
+            fontFamily: "'Barlow', sans-serif",
+            fontSize: 13,
+            color: 'rgba(180,200,255,0.5)',
+          }}>
+            <strong style={{ color: 'rgba(180,200,255,0.6)' }}>Étape {st.num}</strong> — {st.title}
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
