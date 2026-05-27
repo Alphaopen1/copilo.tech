@@ -115,8 +115,8 @@ const T2 = {
     label: '// DÉMO EN DIRECT',
     title: 'ESSAIE COPILO',
     title2: 'EN VRAI.',
-    sub: 'Voici de vraies conversations avec @Copilo_bot. Clique sur un scénario pour voir Copilo en action.',
-    cta: 'Ouvrir @Copilo_bot',
+    sub: 'Voici de vraies conversations avec @Copilo_TaxiBot. Clique sur un scénario pour voir Copilo en action.',
+    cta: 'Ouvrir @Copilo_TaxiBot',
     ctaSub: 'Gratuit · Aucune carte requise',
     tryLabel: 'Scénarios',
   },
@@ -124,8 +124,8 @@ const T2 = {
     label: '// LIVE DEMO',
     title: 'TRY COPILO',
     title2: 'FOR REAL.',
-    sub: 'Real conversations with @Copilo_bot. Click a scenario to see Copilo in action.',
-    cta: 'Open @Copilo_bot',
+    sub: 'Real conversations with @Copilo_TaxiBot. Click a scenario to see Copilo in action.',
+    cta: 'Open @Copilo_TaxiBot',
     ctaSub: 'Free · No card required',
     tryLabel: 'Scenarios',
   },
@@ -261,7 +261,7 @@ export default function TelegramSection({ lang }: { lang: 'fr' | 'en' }) {
             {/* CTA */}
             <div style={{ marginTop: 24 }}>
               <a
-                href="https://t.me/copilo_bot"
+                href="https://t.me/Copilo_TaxiBot"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary"
@@ -308,7 +308,7 @@ export default function TelegramSection({ lang }: { lang: 'fr' | 'en' }) {
                 }}>C</div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 15, color: '#f0f4ff', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    @Copilo_bot
+                    @Copilo_TaxiBot
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />

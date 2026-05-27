@@ -350,40 +350,6 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
                     )}
                   </div>
 
-                  {/* ── Floating mic button — inside screen, above input bar ── */}
-                  {showMic && (
-                    <button
-                      onClick={toggleVoice}
-                      disabled={busy}
-                      aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
-                      style={{
-                        position:'absolute',
-                        bottom: 48,
-                        left:'50%', transform:'translateX(-50%)',
-                        width:56, height:56, borderRadius:'50%', border:'none',
-                        background: listening
-                          ? 'linear-gradient(135deg,#f97316,#dc2626)'
-                          : 'linear-gradient(135deg,#1d5cff,#00cfff)',
-                        boxShadow: listening
-                          ? '0 0 0 1.5px rgba(249,115,22,0.6), 0 0 32px rgba(249,115,22,0.6)'
-                          : '0 0 0 1.5px rgba(29,92,255,0.55), 0 0 32px rgba(29,92,255,0.55)',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                        cursor: busy ? 'not-allowed' : 'pointer',
-                        opacity: busy ? 0.45 : 1,
-                        transition:'background 0.3s, box-shadow 0.3s',
-                        zIndex: 20,
-                      }}
-                    >
-                      {(listening ? [0,0.5,1] : []).map((d,i) => (
-                        <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border:`1.5px solid ${listening ? 'rgba(249,115,22,0.35)' : 'rgba(29,92,255,0.3)'}`, animation:`ring 1.8s ease-out ${d}s infinite`, pointerEvents:'none' }} />
-                      ))}
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" x2="12" y1="19" y2="22"/>
-                      </svg>
-                    </button>
-                  )}
 
                   {/* Bottom input bar */}
                   <div style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
@@ -442,7 +408,46 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
 
               )}
             </div>
+
           </div>
+
+          {/* ── Mic button — COMPLETELY OUTSIDE phone, in normal flex flow ── */}
+          {showMic && (
+            <div style={{ marginTop: 20, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
+              <button
+                onClick={toggleVoice}
+                disabled={busy}
+                aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
+                style={{
+                  position:'relative',
+                  width:60, height:60, borderRadius:'50%', border:'none',
+                  background: listening
+                    ? 'linear-gradient(135deg,#f97316,#dc2626)'
+                    : 'linear-gradient(135deg,#1d5cff,#00cfff)',
+                  boxShadow: listening
+                    ? '0 0 0 1.5px rgba(249,115,22,0.6), 0 0 36px rgba(249,115,22,0.55)'
+                    : '0 0 0 1.5px rgba(29,92,255,0.55), 0 0 36px rgba(29,92,255,0.5)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  cursor: busy ? 'not-allowed' : 'pointer',
+                  opacity: busy ? 0.45 : 1,
+                  transition:'background 0.3s, box-shadow 0.3s',
+                  flexShrink: 0,
+                }}
+              >
+                {(listening ? [0,0.5,1] : []).map((d,i) => (
+                  <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border:`1.5px solid ${listening ? 'rgba(249,115,22,0.35)' : 'rgba(29,92,255,0.3)'}`, animation:`ring 1.8s ease-out ${d}s infinite`, pointerEvents:'none' }} />
+                ))}
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color: listening ? 'rgba(249,115,22,0.7)' : 'rgba(180,200,255,0.35)' }}>
+                {listening ? (lang === 'fr' ? '● EN ÉCOUTE' : '● LISTENING') : (lang === 'fr' ? tr.micHint : tr.micHint)}
+              </span>
+            </div>
+          )}
 
         </div>
       </div>

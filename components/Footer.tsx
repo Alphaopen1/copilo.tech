@@ -41,7 +41,7 @@ export default function Footer({ lang }: { lang: 'fr' | 'en' }) {
             <p style={{ fontSize: 13, color: 'rgba(180,200,255,0.35)', lineHeight: 1.7 }}>
               Ton copilote vocal<br />de route.
             </p>
-            <a href="https://t.me/copilo_bot" target="_blank" rel="noopener noreferrer"
+            <a href="https://t.me/Copilo_TaxiBot" target="_blank" rel="noopener noreferrer"
                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 20, padding: '8px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none' }}>
               <TgIcon />
               <span className="mono" style={{ fontSize: 11, color: 'rgba(180,200,255,0.6)', letterSpacing: '0.06em' }}>TELEGRAM</span>

@@ -70,25 +70,27 @@ export default function OnboardPage() {
   const [bot, setBot]         = useState<BotForm>({ firstName: '', phone: '' })
   const [botErrs, setBotErrs] = useState<Partial<BotForm>>({})
   const [botLoading, setBotLoading] = useState(false)
-  const [botResult, setBotResult]   = useState<{ name: string } | null>(null)
+  const [botResult, setBotResult]   = useState<{ name: string; telegramUrl?: string; message?: string } | null>(null)
   const [botApiError, setBotApiError] = useState(false)
 
   /* Group form state */
   const [group, setGroup]         = useState<GroupForm>({ groupName: '', type: 'private', description: '' })
   const [groupErrs, setGroupErrs] = useState<Partial<GroupForm>>({})
   const [groupLoading, setGroupLoading] = useState(false)
-  const [groupInvite, setGroupInvite]   = useState<string | null>(null)
+  const [groupResult, setGroupResult]   = useState<{ inviteLink: string; steps?: string[] } | null>(null)
   const [groupApiError, setGroupApiError] = useState(false)
+  const groupInvite = groupResult?.inviteLink ?? null
 
   /* Admin form state */
   const [admin, setAdmin]         = useState<AdminForm>({ groupHandle: '' })
   const [adminErrs, setAdminErrs] = useState<Partial<AdminForm>>({})
   const [adminLoading, setAdminLoading] = useState(false)
-  const [adminDone, setAdminDone]       = useState(false)
+  const [adminResult, setAdminResult]   = useState<{ steps?: string[]; addBotUrl?: string } | null>(null)
   const [adminApiError, setAdminApiError] = useState(false)
+  const adminDone = adminResult !== null
 
-  /* ── Bot submit ─────────────────────────────────────────────────── */
-  const submitBot = async (e: React.FormEvent) => {
+  /* ── Bot submit — 100% client-side, zero API ────────────────────── */
+  const submitBot = (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Partial<BotForm> = {}
     if (bot.firstName.trim().length < 2) errs.firstName = 'Prénom requis (min. 2 caractères)'
@@ -96,70 +98,67 @@ export default function OnboardPage() {
     if (Object.keys(errs).length) { setBotErrs(errs); return }
     setBotErrs({})
     setBotLoading(true)
-    setBotApiError(false)
-    try {
-      const res = await fetch('/api/onboard/create-bot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: bot.firstName.trim(), phone: bot.phone }),
-      })
-      if (!res.ok) throw new Error('not_ready')
-      const data = await res.json() as { name?: string }
-      setBotResult({ name: data.name ?? `Copilo_de_${bot.firstName.trim()}` })
-    } catch {
-      setBotApiError(true)
-    } finally {
-      setBotLoading(false)
-    }
+
+    const first   = bot.firstName.trim()
+    const safe    = first.replace(/[^a-zA-ZÀ-ÿ0-9]/g, '')
+    const botName = `Copilo_de_${safe}`
+    const payload = btoa(`${first}|${bot.phone.replace(/[\s\-]/g, '')}`).slice(0, 60).replace(/=/g, '')
+
+    setBotResult({
+      name:        botName,
+      telegramUrl: `https://t.me/Copilo_TaxiBot?start=setup_${payload}`,
+      message:     `Ouvre Telegram — @Copilo_TaxiBot va configurer ton bot @${botName} en 2 minutes.`,
+    })
+    setBotLoading(false)
   }
 
-  /* ── Group submit ───────────────────────────────────────────────── */
-  const submitGroup = async (e: React.FormEvent) => {
+  /* ── Group submit — 100% client-side, zero API ──────────────────── */
+  const submitGroup = (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Partial<GroupForm> = {}
     if (group.groupName.trim().length < 3) errs.groupName = 'Nom requis (min. 3 caractères)'
     if (Object.keys(errs).length) { setGroupErrs(errs); return }
     setGroupErrs({})
     setGroupLoading(true)
-    setGroupApiError(false)
-    try {
-      const res = await fetch('/api/onboard/create-group', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupName: group.groupName.trim(), type: group.type, description: group.description }),
-      })
-      if (!res.ok) throw new Error('not_ready')
-      const data = await res.json() as { inviteLink?: string }
-      setGroupInvite(data.inviteLink ?? 'https://t.me/+example')
-    } catch {
-      setGroupApiError(true)
-    } finally {
-      setGroupLoading(false)
-    }
+
+    const gName   = group.groupName.trim()
+    const payload = btoa(`group|${gName}|${group.type}`).slice(0, 60).replace(/=/g, '')
+
+    setGroupResult({
+      inviteLink: `https://t.me/Copilo_TaxiBot?start=group_${payload}`,
+      steps: [
+        `1. Crée un groupe Telegram nommé "${gName}"`,
+        '2. Invite @Copilo_TaxiBot dans le groupe',
+        '3. Nomme @Copilo_TaxiBot administrateur (Gérer les messages)',
+        '4. Le dispatch de courses s\'active automatiquement ✅',
+      ],
+    })
+    setGroupLoading(false)
   }
 
-  /* ── Admin submit ───────────────────────────────────────────────── */
-  const submitAdmin = async (e: React.FormEvent) => {
+  /* ── Admin submit — 100% client-side, zero API ──────────────────── */
+  const submitAdmin = (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Partial<AdminForm> = {}
     if (!admin.groupHandle.trim()) errs.groupHandle = 'Renseigne le username ou lien du groupe'
     if (Object.keys(errs).length) { setAdminErrs(errs); return }
     setAdminErrs({})
     setAdminLoading(true)
-    setAdminApiError(false)
-    try {
-      const res = await fetch('/api/onboard/verify-admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupHandle: admin.groupHandle.trim() }),
-      })
-      if (!res.ok) throw new Error('not_ready')
-      setAdminDone(true)
-    } catch {
-      setAdminApiError(true)
-    } finally {
-      setAdminLoading(false)
-    }
+
+    const handle  = admin.groupHandle.trim().replace(/^@/, '')
+    const payload = btoa(`admin|${handle}`).slice(0, 60).replace(/=/g, '')
+
+    setAdminResult({
+      addBotUrl: `https://t.me/Copilo_TaxiBot?start=admin_${payload}`,
+      steps: [
+        `1. Ouvre ton groupe @${handle} dans Telegram`,
+        '2. Paramètres → Administrateurs → Ajouter un admin',
+        '3. Recherche @Copilo_TaxiBot et sélectionne-le',
+        '4. Active : Gérer les messages + Épingler les messages',
+        '5. Copilo est actif dans ton groupe ✅',
+      ],
+    })
+    setAdminLoading(false)
   }
 
   /* ── Card data ─────────────────────────────────────────────────── */
@@ -410,8 +409,13 @@ export default function OnboardPage() {
                     }}>
                       ✅ @{botResult.name} est prêt !
                     </div>
+                    {botResult.message && (
+                      <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: 14, color: 'rgba(180,200,255,0.6)', lineHeight: 1.6, margin: 0 }}>
+                        {botResult.message}
+                      </p>
+                    )}
                     <a
-                      href={`https://t.me/${botResult.name}`}
+                      href={botResult.telegramUrl ?? `https://t.me/${botResult.name}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-primary"
@@ -431,7 +435,7 @@ export default function OnboardPage() {
                         textDecoration: 'none',
                       }}
                     >
-                      <TgIcon /> Ouvrir sur Telegram
+                      <TgIcon /> Ouvrir sur Telegram →
                     </a>
                   </div>
                 ) : botApiError ? (
@@ -515,7 +519,7 @@ export default function OnboardPage() {
                   Nouveau groupe Copilo
                 </h2>
 
-                {groupInvite ? (
+                {groupResult ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div style={{
                       padding: '20px 24px',
@@ -527,38 +531,48 @@ export default function OnboardPage() {
                       fontWeight: 700,
                       fontSize: 18,
                     }}>
-                      ✅ Groupe créé avec succès !
+                      ✅ Groupe configuré !
                     </div>
-                    <div style={{
-                      padding: '14px 18px',
-                      borderRadius: 10,
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.09)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 6,
-                    }}>
-                      <span style={{
-                        fontFamily: "'DM Mono', monospace",
-                        fontSize: 9,
-                        letterSpacing: '0.12em',
+                    {groupResult.steps && (
+                      <div style={{
+                        padding: '14px 18px',
+                        borderRadius: 10,
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                      }}>
+                        {groupResult.steps.map((s, i) => (
+                          <div key={i} style={{ fontFamily: "'Barlow', sans-serif", fontSize: 13, color: 'rgba(180,200,255,0.7)', lineHeight: 1.5 }}>
+                            {s}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <a
+                      href={groupResult.inviteLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        padding: '14px 28px',
+                        borderRadius: 12,
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 17,
+                        letterSpacing: '0.06em',
                         textTransform: 'uppercase',
-                        color: 'rgba(0,207,255,0.6)',
-                      }}>Lien d'invitation</span>
-                      <a
-                        href={groupInvite}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          fontFamily: "'DM Mono', monospace",
-                          fontSize: 14,
-                          color: '#00cfff',
-                          wordBreak: 'break-all',
-                        }}
-                      >
-                        {groupInvite}
-                      </a>
-                    </div>
+                        color: '#fff',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <TgIcon /> Ouvrir sur Telegram →
+                    </a>
                   </div>
                 ) : groupApiError ? (
                   <NotReady />
@@ -692,18 +706,62 @@ export default function OnboardPage() {
                   Rejoindre en admin
                 </h2>
 
-                {adminDone ? (
-                  <div style={{
-                    padding: '20px 24px',
-                    borderRadius: 14,
-                    background: 'rgba(5,150,105,0.08)',
-                    border: '1px solid rgba(5,150,105,0.3)',
-                    color: '#34d399',
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 18,
-                  }}>
-                    ✅ Copilo est bien admin dans ton groupe !
+                {adminResult ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{
+                      padding: '20px 24px',
+                      borderRadius: 14,
+                      background: 'rgba(5,150,105,0.08)',
+                      border: '1px solid rgba(5,150,105,0.3)',
+                      color: '#34d399',
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontWeight: 700,
+                      fontSize: 18,
+                    }}>
+                      ✅ Suis les étapes ci-dessous
+                    </div>
+                    {adminResult.steps && (
+                      <div style={{
+                        padding: '14px 18px',
+                        borderRadius: 10,
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                      }}>
+                        {adminResult.steps.map((s, i) => (
+                          <div key={i} style={{ fontFamily: "'Barlow', sans-serif", fontSize: 13, color: 'rgba(180,200,255,0.7)', lineHeight: 1.5 }}>
+                            {s}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {adminResult.addBotUrl && (
+                      <a
+                        href={adminResult.addBotUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          padding: '14px 28px',
+                          borderRadius: 12,
+                          fontFamily: "'Barlow Condensed', sans-serif",
+                          fontWeight: 700,
+                          fontSize: 17,
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          color: '#fff',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <TgIcon /> Ajouter @Copilo_TaxiBot →
+                      </a>
+                    )}
                   </div>
                 ) : adminApiError ? (
                   <NotReady />
