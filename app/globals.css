@@ -206,3 +206,138 @@ body {
 .delay-2   { animation-delay: 0.3s;  opacity: 0; }
 .delay-3   { animation-delay: 0.45s; opacity: 0; }
 .delay-4   { animation-delay: 0.6s;  opacity: 0; }
+
+/* ── PREFERS REDUCED MOTION ─────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── SCROLL REVEAL ──────────────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity  0.65s cubic-bezier(0.25, 0, 0, 1),
+    transform 0.65s cubic-bezier(0.25, 0, 0, 1);
+}
+[data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal][data-delay="1"] { transition-delay: 0.08s; }
+[data-reveal][data-delay="2"] { transition-delay: 0.16s; }
+[data-reveal][data-delay="3"] { transition-delay: 0.24s; }
+[data-reveal][data-delay="4"] { transition-delay: 0.32s; }
+[data-reveal][data-delay="5"] { transition-delay: 0.40s; }
+[data-reveal][data-delay="6"] { transition-delay: 0.48s; }
+
+/* Slide from left */
+[data-reveal="left"] {
+  transform: translateX(-32px);
+}
+[data-reveal="left"].in { transform: none; }
+
+/* Slide from right */
+[data-reveal="right"] {
+  transform: translateX(32px);
+}
+[data-reveal="right"].in { transform: none; }
+
+/* Scale up */
+[data-reveal="scale"] {
+  transform: scale(0.92);
+}
+[data-reveal="scale"].in { transform: none; }
+
+/* ── CUSTOM CURSOR ──────────────────────────── */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  top: 0; left: 0;
+  will-change: transform;
+}
+.cursor-dot {
+  width: 6px; height: 6px;
+  background: var(--cyan);
+  transition: opacity 0.2s, transform 0.1s;
+  margin: -3px 0 0 -3px;
+}
+.cursor-ring {
+  width: 32px; height: 32px;
+  border: 1.5px solid rgba(0,207,255,0.45);
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, opacity 0.2s;
+  margin: -16px 0 0 -16px;
+}
+.cursor-ring.hovering {
+  width: 52px; height: 52px;
+  border-color: rgba(0,207,255,0.75);
+}
+.cursor-ring.clicking {
+  width: 24px; height: 24px;
+  border-color: rgba(249,115,22,0.8);
+}
+@media (hover: none) {
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
+
+/* ── SCROLL PROGRESS BAR ────────────────────── */
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--cyan) 100%);
+  z-index: 200;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.05s linear;
+  border-radius: 0 1px 1px 0;
+  box-shadow: 0 0 8px rgba(0,207,255,0.5);
+}
+
+/* ── FOCUS STYLES (keyboard nav) ────────────── */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── BUTTON PRESS STATES ────────────────────── */
+.btn-primary:active {
+  transform: scale(0.97) translateY(0) !important;
+  box-shadow: 0 0 0 1px rgba(29,92,255,0.5), 0 0 16px rgba(29,92,255,0.3) !important;
+}
+.btn-ghost:active {
+  transform: scale(0.97) translateY(0) !important;
+  background: rgba(255,255,255,0.06) !important;
+}
+
+/* ── LINK UNDERLINE ANIMATION ───────────────── */
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 100%; height: 1px;
+  background: var(--cyan);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s cubic-bezier(0.25,0,0,1);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}

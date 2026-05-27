@@ -8,12 +8,20 @@ import AvatarSection from '@/components/AvatarSection'
 import TelegramSection from '@/components/TelegramSection'
 import Waitlist from '@/components/Waitlist'
 import Footer from '@/components/Footer'
+import CustomCursor from '@/components/CustomCursor'
+import ProgressBar from '@/components/ProgressBar'
+import ScrollReveal from '@/components/ScrollReveal'
 
 export default function Home() {
   const [lang, setLang] = useState<'fr' | 'en'>('fr')
 
   return (
     <>
+      {/* Global UI enhancements */}
+      <CustomCursor />
+      <ProgressBar />
+      <ScrollReveal />
+
       {/* Fixed stars background */}
       <div className="stars-bg" />
 

@@ -49,7 +49,7 @@ export default function AvatarSection({ lang }: { lang: 'fr' | 'en' }) {
         {/* Left: avatar cards */}
         <div className="flex-1 grid grid-cols-1 gap-4 w-full max-w-sm mx-auto lg:mx-0">
           {tr.avatars.map((a, i) => (
-            <div key={a.name} className="glass rounded-2xl p-4 flex items-center gap-4 hover:-translate-y-0.5 transition-transform">
+            <div key={a.name} data-reveal data-delay={String(i + 1)} className="glass rounded-2xl p-4 flex items-center gap-4 hover:-translate-y-0.5 transition-transform">
               {/* Avatar circle */}
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${a.color} flex items-center justify-center text-2xl flex-shrink-0 shadow-lg`}>
                 {a.emoji}
@@ -82,10 +82,10 @@ export default function AvatarSection({ lang }: { lang: 'fr' | 'en' }) {
 
         {/* Right: text */}
         <div className="flex-1 text-center lg:text-left">
-          <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-cyan-400 border border-cyan-500/30 bg-cyan-500/10 mb-6">
+          <span data-reveal className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold text-cyan-400 border border-cyan-500/30 bg-cyan-500/10 mb-6">
             {tr.badge}
           </span>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">
+          <h2 data-reveal data-delay="1" className="text-4xl md:text-5xl font-black tracking-tight mb-6">
             <span className="text-white">{tr.title}</span>
             <br />
             <span className="gt-blue">{tr.title2}</span>

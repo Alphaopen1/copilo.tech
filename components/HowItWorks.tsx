@@ -31,10 +31,10 @@ export default function HowItWorks({ lang }: { lang: 'fr' | 'en' }) {
 
           {/* Left: title */}
           <div style={{ flex: '0 0 260px' }}>
-            <div className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'rgba(0,207,255,0.7)', marginBottom: 16 }}>
+            <div data-reveal="left" className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'rgba(0,207,255,0.7)', marginBottom: 16 }}>
               {tr.label}
             </div>
-            <h2 className="display" style={{ fontSize: 'clamp(40px,5vw,64px)', color: '#f0f4ff', whiteSpace: 'pre-line' }}>
+            <h2 data-reveal="left" data-delay="1" className="display" style={{ fontSize: 'clamp(40px,5vw,64px)', color: '#f0f4ff', whiteSpace: 'pre-line' }}>
               {tr.title}
             </h2>
           </div>
@@ -42,7 +42,7 @@ export default function HowItWorks({ lang }: { lang: 'fr' | 'en' }) {
           {/* Right: steps */}
           <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 0 }}>
             {tr.steps.map((s, i) => (
-              <div key={s.n} style={{ display: 'flex', gap: 24, paddingBottom: i < 2 ? 40 : 0, position: 'relative' }}>
+              <div key={s.n} data-reveal data-delay={String(i + 1)} style={{ display: 'flex', gap: 24, paddingBottom: i < 2 ? 40 : 0, position: 'relative' }}>
                 {/* Vertical line */}
                 {i < 2 && (
                   <div style={{

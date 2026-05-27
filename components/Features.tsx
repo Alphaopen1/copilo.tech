@@ -37,13 +37,13 @@ export default function Features({ lang }: { lang: 'fr' | 'en' }) {
 
         {/* Header */}
         <div style={{ marginBottom: 60 }}>
-          <div className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'rgba(0,207,255,0.7)', marginBottom: 16 }}>
+          <div data-reveal className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'rgba(0,207,255,0.7)', marginBottom: 16 }}>
             {tr.label}
           </div>
-          <h2 className="display" style={{ fontSize: 'clamp(40px,6vw,72px)', color: '#f0f4ff', marginBottom: 12 }}>
+          <h2 data-reveal data-delay="1" className="display" style={{ fontSize: 'clamp(40px,6vw,72px)', color: '#f0f4ff', marginBottom: 12 }}>
             {tr.title}
           </h2>
-          <p style={{ fontSize: 17, color: 'rgba(180,200,255,0.55)', fontWeight: 300 }}>{tr.sub}</p>
+          <p data-reveal data-delay="2" style={{ fontSize: 17, color: 'rgba(180,200,255,0.55)', fontWeight: 300 }}>{tr.sub}</p>
         </div>
 
         <hr className="section-rule" style={{ marginBottom: 48 }} />
@@ -53,6 +53,8 @@ export default function Features({ lang }: { lang: 'fr' | 'en' }) {
           {tr.items.map((f, i) => (
             <div
               key={f.title}
+              data-reveal
+              data-delay={String((i % 3) + 1)}
               className="card-hover"
               style={{
                 padding: '32px 28px',
