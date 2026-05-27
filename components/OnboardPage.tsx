@@ -122,15 +122,18 @@ export default function OnboardPage() {
     setGroupLoading(true)
 
     const gName   = group.groupName.trim()
-    const payload = btoa(`group|${gName}|${group.type}`).slice(0, 60).replace(/=/g, '')
+    // ?startgroup= ouvre un dialog de sélection de groupe dans Telegram
+    // L'utilisateur choisit son groupe existant → le bot rejoint + s'initialise
+    const payload = btoa(`g:${gName}`).slice(0, 60).replace(/=/g, '')
 
     setGroupResult({
-      inviteLink: `https://t.me/Copilo_TaxiBot?start=group_${payload}`,
+      inviteLink: `https://t.me/Copilo_TaxiBot?startgroup=${payload}`,
       steps: [
-        `1. Crée un groupe Telegram nommé "${gName}"`,
-        '2. Invite @Copilo_TaxiBot dans le groupe',
-        '3. Nomme @Copilo_TaxiBot administrateur (Gérer les messages)',
-        '4. Le dispatch de courses s\'active automatiquement ✅',
+        `1. Crée d'abord un groupe Telegram nommé "${gName}" (icône crayon → Nouveau groupe)`,
+        `2. Clique sur le bouton ci-dessous — Telegram va te demander dans quel groupe ajouter @Copilo_TaxiBot`,
+        `3. Sélectionne "${gName}" dans la liste`,
+        '4. Une fois ajouté, nomme @Copilo_TaxiBot administrateur (Gérer les messages)',
+        '5. Le dispatch de courses s\'active automatiquement ✅',
       ],
     })
     setGroupLoading(false)
@@ -571,7 +574,7 @@ export default function OnboardPage() {
                         textDecoration: 'none',
                       }}
                     >
-                      <TgIcon /> Ouvrir sur Telegram →
+                      <TgIcon /> Ajouter @Copilo_TaxiBot à mon groupe →
                     </a>
                   </div>
                 ) : groupApiError ? (

@@ -105,7 +105,6 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
   const [capVal,     setCapVal]     = useState('')
   const [errs,       setErrs]       = useState<Record<string,string>>({})
 
-  const recogRef = useRef<any>(null)
   const chatRef  = useRef<HTMLDivElement>(null)
   const txtRef   = useRef<HTMLInputElement>(null)
 
@@ -144,42 +143,12 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
     await botRespond()
   }, [phase, push, botRespond])
 
-  /* ── Voice ─────────────────────────────────────────────────────── */
+  /* ── Voice → ouvre Telegram directement ────────────────────────── */
+  // La démo web est un aperçu visuel. Le vrai vocal push-to-talk est
+  // dans l'app Telegram. Clic mic = ouverture directe de @Copilo_TaxiBot.
   const toggleVoice = useCallback(() => {
-    if (phase === 'listening') {
-      recogRef.current?.stop(); setPhase(msgs.length ? 'chat' : 'idle'); return
-    }
-
-    const SR = typeof window !== 'undefined'
-      ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      : null
-
-    if (!SR) {
-      // Browser doesn't support speech — fall back to text input
-      setPhase('chat'); setTimeout(() => txtRef.current?.focus(), 80); return
-    }
-
-    // Optimistic UI: go to listening immediately so the button lights up
-    // SpeechRecognition will trigger the permission dialog on r.start()
-    setPhase('listening')
-
-    const r = new SR()
-    r.lang = lang === 'fr' ? 'fr-FR' : 'en-US'
-    r.continuous = false; r.interimResults = false
-    r.onstart  = () => setPhase('listening')
-    r.onresult = (e: any) => {
-      const t = e.results?.[0]?.[0]?.transcript
-      if (t) send(t); else setPhase(msgs.length ? 'chat' : 'idle')
-    }
-    r.onerror = (e: any) => {
-      // 'not-allowed': user denied or no microphone
-      setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
-      if (e?.error === 'not-allowed') setTimeout(() => txtRef.current?.focus(), 80)
-    }
-    r.onend = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
-    try { r.start(); recogRef.current = r }
-    catch { setPhase(msgs.length ? 'chat' : 'idle') }
-  }, [phase, lang, msgs.length, send])
+    window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer')
+  }, [])
 
   /* ── Form submit ────────────────────────────────────────────────── */
   const validatePhone = (p: string) => {
@@ -198,9 +167,7 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
     setTimeout(() => window.open(`https://t.me/Copilo_TaxiBot?start=web_${encodeURIComponent(name.trim())}`, '_blank'), 500)
   }
 
-  const listening = phase === 'listening'
-  const busy      = phase === 'thinking'
-  const showMic   = ['idle','listening','thinking','chat'].includes(phase)
+  const busy = phase === 'thinking'
 
   /* ──────────────────────────────────────────────────────────────────
      RENDER
@@ -350,11 +317,28 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
                     )}
                   </div>
 
-
-                  {/* Bottom input bar */}
-                  <div style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
-                    <input ref={txtRef} type="text" value={textIn} onChange={e => setTextIn(e.target.value)} onKeyDown={e => e.key === 'Enter' && send(textIn)} placeholder={tr.orType} disabled={busy || listening}
-                      style={{ flex:1, height:32, borderRadius:16, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', padding:'0 11px 0 11px', color:'#f0f4ff', fontFamily:"'Barlow',sans-serif", fontSize:10.5, outline:'none' }} />
+                  {/* Bottom input bar with mic button */}
+                  <div style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 10px', borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
+                    {/* Mic button — ouvre Telegram directement, pas de SpeechRecognition */}
+                    <button
+                      onClick={toggleVoice}
+                      title={lang === 'fr' ? 'Parler à Copilo sur Telegram' : 'Talk to Copilo on Telegram'}
+                      style={{
+                        width:32, height:32, borderRadius:'50%', border:'none', flexShrink:0,
+                        background:'linear-gradient(135deg,#1d5cff,#00cfff)',
+                        boxShadow:'0 0 14px rgba(29,92,255,0.45)',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        cursor:'pointer',
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" x2="12" y1="19" y2="22"/>
+                      </svg>
+                    </button>
+                    <input ref={txtRef} type="text" value={textIn} onChange={e => setTextIn(e.target.value)} onKeyDown={e => e.key === 'Enter' && send(textIn)} placeholder={tr.orType} disabled={busy}
+                      style={{ flex:1, height:32, borderRadius:16, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', padding:'0 11px', color:'#f0f4ff', fontFamily:"'Barlow',sans-serif", fontSize:10.5, outline:'none' }} />
                     {textIn.trim() && (
                       <button onClick={() => send(textIn)} style={{ width:30, height:30, borderRadius:'50%', border:'none', background:'#1d5cff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 }}>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -411,43 +395,6 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
 
           </div>
 
-          {/* ── Mic button — COMPLETELY OUTSIDE phone, in normal flex flow ── */}
-          {showMic && (
-            <div style={{ marginTop: 20, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
-              <button
-                onClick={toggleVoice}
-                disabled={busy}
-                aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
-                style={{
-                  position:'relative',
-                  width:60, height:60, borderRadius:'50%', border:'none',
-                  background: listening
-                    ? 'linear-gradient(135deg,#f97316,#dc2626)'
-                    : 'linear-gradient(135deg,#1d5cff,#00cfff)',
-                  boxShadow: listening
-                    ? '0 0 0 1.5px rgba(249,115,22,0.6), 0 0 36px rgba(249,115,22,0.55)'
-                    : '0 0 0 1.5px rgba(29,92,255,0.55), 0 0 36px rgba(29,92,255,0.5)',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  cursor: busy ? 'not-allowed' : 'pointer',
-                  opacity: busy ? 0.45 : 1,
-                  transition:'background 0.3s, box-shadow 0.3s',
-                  flexShrink: 0,
-                }}
-              >
-                {(listening ? [0,0.5,1] : []).map((d,i) => (
-                  <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border:`1.5px solid ${listening ? 'rgba(249,115,22,0.35)' : 'rgba(29,92,255,0.3)'}`, animation:`ring 1.8s ease-out ${d}s infinite`, pointerEvents:'none' }} />
-                ))}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
-                </svg>
-              </button>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color: listening ? 'rgba(249,115,22,0.7)' : 'rgba(180,200,255,0.35)' }}>
-                {listening ? (lang === 'fr' ? '● EN ÉCOUTE' : '● LISTENING') : (lang === 'fr' ? tr.micHint : tr.micHint)}
-              </span>
-            </div>
-          )}
 
         </div>
       </div>
