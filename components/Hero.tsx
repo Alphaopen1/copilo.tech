@@ -145,7 +145,7 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
   }, [phase, push, botRespond])
 
   /* ── Voice ─────────────────────────────────────────────────────── */
-  const toggleVoice = useCallback(async () => {
+  const toggleVoice = useCallback(() => {
     if (phase === 'listening') {
       recogRef.current?.stop(); setPhase(msgs.length ? 'chat' : 'idle'); return
     }
@@ -155,19 +155,13 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
       : null
 
     if (!SR) {
-      // Browser doesn't support speech recognition — fall back to text input
+      // Browser doesn't support speech — fall back to text input
       setPhase('chat'); setTimeout(() => txtRef.current?.focus(), 80); return
     }
 
-    // Explicitly request microphone permission — triggers the browser dialog
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      // Stop the test stream immediately; SpeechRecognition manages its own stream
-      stream.getTracks().forEach(t => t.stop())
-    } catch {
-      // User denied or device unavailable — fall back to text input
-      setPhase('chat'); setTimeout(() => txtRef.current?.focus(), 80); return
-    }
+    // Optimistic UI: go to listening immediately so the button lights up
+    // SpeechRecognition will trigger the permission dialog on r.start()
+    setPhase('listening')
 
     const r = new SR()
     r.lang = lang === 'fr' ? 'fr-FR' : 'en-US'
@@ -177,8 +171,12 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
       const t = e.results?.[0]?.[0]?.transcript
       if (t) send(t); else setPhase(msgs.length ? 'chat' : 'idle')
     }
-    r.onerror = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
-    r.onend   = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
+    r.onerror = (e: any) => {
+      // 'not-allowed': user denied or no microphone
+      setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
+      if (e?.error === 'not-allowed') setTimeout(() => txtRef.current?.focus(), 80)
+    }
+    r.onend = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
     try { r.start(); recogRef.current = r }
     catch { setPhase(msgs.length ? 'chat' : 'idle') }
   }, [phase, lang, msgs.length, send])
@@ -247,7 +245,7 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
         </div>
 
         {/* ── RIGHT: iPhone 17 Pro Max + video ───────────────── */}
-        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:28, width:'min(580px, 90vw)' }}>
+        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center' }}>
 
           {/* Ambient glow behind phone */}
           <div style={{ position:'absolute', top:-30, left:-30, right:-30, height:700, background:'radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,92,255,0.18) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
@@ -444,25 +442,6 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
 
               )}
             </div>
-          </div>
-
-          {/* ── Demo video below phone — full column width ── */}
-          <div style={{ width:'100%', borderRadius:18, overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 24px 60px rgba(0,0,0,0.6), 0 0 40px rgba(29,92,255,0.12)', position:'relative' }}>
-            {/* Top bar mimicking a media player */}
-            <div style={{ background:'rgba(4,8,15,0.95)', padding:'8px 12px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ width:6, height:6, borderRadius:'50%', background:'#dc2626' }} />
-              <div style={{ width:6, height:6, borderRadius:'50%', background:'#f59e0b' }} />
-              <div style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e' }} />
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.35)', letterSpacing:'0.1em', marginLeft:4 }}>COPILO_PITCH.MP4</span>
-            </div>
-            <video
-              src="/copilo-demo.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{ width:'100%', display:'block' }}
-            />
           </div>
 
         </div>
