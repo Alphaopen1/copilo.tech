@@ -125,6 +125,30 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
           </form>
         )}
 
+        {/* CTA Onboard */}
+        <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <a
+            href="/onboard"
+            className="btn-primary"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '14px 28px',
+              borderRadius: 12,
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: 17,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: '#fff',
+              textDecoration: 'none',
+            }}
+          >
+            {lang === 'fr' ? 'Créer mon Copilo →' : 'Create my Copilo →'}
+          </a>
+        </div>
+
         {/* Social proof */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 36 }}>
           <div style={{ display: 'flex' }}>
