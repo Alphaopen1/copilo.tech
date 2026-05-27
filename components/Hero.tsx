@@ -232,52 +232,14 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
           </div>
         </div>
 
-        {/* ── RIGHT: iPhone 17 Pro Max + floating mic ─────────── */}
-        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', paddingBottom:40 }}>
+        {/* ── RIGHT: iPhone 17 Pro Max + video ───────────────── */}
+        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:24 }}>
 
           {/* Ambient glow behind phone */}
-          <div style={{ position:'absolute', inset:-30, background:'radial-gradient(ellipse 70% 60% at 50% 60%, rgba(29,92,255,0.18) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', top:-30, left:-30, right:-30, height:700, background:'radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,92,255,0.18) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
 
           {/* ── iPhone 17 Pro Max shell ── */}
-          <div style={{ position:'relative', width:310, height:660, flexShrink:0, marginBottom: 50 }}>
-
-            {/* ── Floating microphone — inside phone div so it's always in bounds ── */}
-            {showMic && (
-              <button
-                onClick={toggleVoice}
-                disabled={busy}
-                aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
-                style={{
-                  position:'absolute',
-                  bottom: -34,   // half of 68px → button center sits on phone's bottom edge
-                  left:'50%', transform:'translateX(-50%)',
-                  width:68, height:68, borderRadius:'50%', border:'none',
-                  background: listening
-                    ? 'linear-gradient(135deg,#f97316,#dc2626)'
-                    : 'linear-gradient(135deg,#1d5cff,#00cfff)',
-                  boxShadow: listening
-                    ? '0 0 0 1.5px rgba(249,115,22,0.6), 0 0 44px rgba(249,115,22,0.5)'
-                    : '0 0 0 1.5px rgba(29,92,255,0.55), 0 0 44px rgba(29,92,255,0.45)',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  cursor: busy ? 'not-allowed' : 'pointer',
-                  opacity: busy ? 0.45 : 1,
-                  transition:'background 0.3s, box-shadow 0.3s, transform 0.15s',
-                  zIndex: 30,       // above phone frame
-                  pointerEvents:'auto',
-                }}
-                onMouseEnter={e => { if (!busy) e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateX(-50%) scale(1)' }}
-              >
-                {(listening ? [0,0.4,0.8] : [0,0.7,1.4]).map((d,i) => (
-                  <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border:`1.5px solid ${listening ? 'rgba(249,115,22,0.4)' : 'rgba(29,92,255,0.35)'}`, animation:`ring 2s ease-out ${d}s infinite`, pointerEvents:'none' }} />
-                ))}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
-                </svg>
-              </button>
-            )}
+          <div style={{ position:'relative', width:310, height:660, flexShrink:0 }}>
 
             {/* Black Titanium frame */}
             <div style={{
@@ -335,12 +297,12 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
               {phase !== 'form' && phase !== 'success' ? (
 
                 /* CHAT */
-                <>
-                  <div ref={chatRef} style={{ flex:1, overflowY:'auto', padding:'10px 12px', display:'flex', flexDirection:'column', gap:7, scrollbarWidth:'none' }}>
+                <div style={{ flex:1, position:'relative', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+                  <div ref={chatRef} style={{ flex:1, overflowY:'auto', padding:'10px 12px 12px', display:'flex', flexDirection:'column', gap:7, scrollbarWidth:'none' }}>
 
                     {/* Idle: suggestions */}
                     {msgs.length === 0 && phase === 'idle' && (
-                      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:14, padding:'0 8px' }}>
+                      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:14, padding:'0 8px 60px' }}>
                         <div style={{ fontSize:30 }}>🎙️</div>
                         <div style={{ fontFamily:"'Barlow',sans-serif", fontSize:12, color:'rgba(180,200,255,0.45)', textAlign:'center', lineHeight:1.6 }}>
                           {tr.micHint}
@@ -376,17 +338,52 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
                     )}
                   </div>
 
+                  {/* ── Floating mic button — inside screen, above input bar ── */}
+                  {showMic && (
+                    <button
+                      onClick={toggleVoice}
+                      disabled={busy}
+                      aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
+                      style={{
+                        position:'absolute',
+                        bottom: 48,
+                        left:'50%', transform:'translateX(-50%)',
+                        width:56, height:56, borderRadius:'50%', border:'none',
+                        background: listening
+                          ? 'linear-gradient(135deg,#f97316,#dc2626)'
+                          : 'linear-gradient(135deg,#1d5cff,#00cfff)',
+                        boxShadow: listening
+                          ? '0 0 0 1.5px rgba(249,115,22,0.6), 0 0 32px rgba(249,115,22,0.6)'
+                          : '0 0 0 1.5px rgba(29,92,255,0.55), 0 0 32px rgba(29,92,255,0.55)',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        cursor: busy ? 'not-allowed' : 'pointer',
+                        opacity: busy ? 0.45 : 1,
+                        transition:'background 0.3s, box-shadow 0.3s',
+                        zIndex: 20,
+                      }}
+                    >
+                      {(listening ? [0,0.5,1] : []).map((d,i) => (
+                        <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border:`1.5px solid ${listening ? 'rgba(249,115,22,0.35)' : 'rgba(29,92,255,0.3)'}`, animation:`ring 1.8s ease-out ${d}s infinite`, pointerEvents:'none' }} />
+                      ))}
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" x2="12" y1="19" y2="22"/>
+                      </svg>
+                    </button>
+                  )}
+
                   {/* Bottom input bar */}
-                  <div style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.92)', flexShrink:0 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
                     <input ref={txtRef} type="text" value={textIn} onChange={e => setTextIn(e.target.value)} onKeyDown={e => e.key === 'Enter' && send(textIn)} placeholder={tr.orType} disabled={busy || listening}
-                      style={{ flex:1, height:32, borderRadius:16, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', padding:'0 11px', color:'#f0f4ff', fontFamily:"'Barlow',sans-serif", fontSize:10.5, outline:'none' }} />
+                      style={{ flex:1, height:32, borderRadius:16, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', padding:'0 11px 0 11px', color:'#f0f4ff', fontFamily:"'Barlow',sans-serif", fontSize:10.5, outline:'none' }} />
                     {textIn.trim() && (
                       <button onClick={() => send(textIn)} style={{ width:30, height:30, borderRadius:'50%', border:'none', background:'#1d5cff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 }}>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
                       </button>
                     )}
                   </div>
-                </>
+                </div>
 
               ) : phase === 'form' ? (
 
@@ -433,6 +430,25 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
 
               )}
             </div>
+          </div>
+
+          {/* ── Demo video below phone ── */}
+          <div style={{ width:310, borderRadius:18, overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 16px 48px rgba(0,0,0,0.5), 0 0 24px rgba(29,92,255,0.1)', position:'relative' }}>
+            {/* Top bar mimicking a media player */}
+            <div style={{ background:'rgba(4,8,15,0.95)', padding:'8px 12px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ width:6, height:6, borderRadius:'50%', background:'#dc2626' }} />
+              <div style={{ width:6, height:6, borderRadius:'50%', background:'#f59e0b' }} />
+              <div style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e' }} />
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.35)', letterSpacing:'0.1em', marginLeft:4 }}>COPILO_PITCH.MP4</span>
+            </div>
+            <video
+              src="/copilo-demo.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ width:'100%', display:'block' }}
+            />
           </div>
 
         </div>
