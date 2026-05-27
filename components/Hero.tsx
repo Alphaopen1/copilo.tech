@@ -145,14 +145,29 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
   }, [phase, push, botRespond])
 
   /* ── Voice ─────────────────────────────────────────────────────── */
-  const toggleVoice = useCallback(() => {
+  const toggleVoice = useCallback(async () => {
     if (phase === 'listening') {
       recogRef.current?.stop(); setPhase(msgs.length ? 'chat' : 'idle'); return
     }
+
     const SR = typeof window !== 'undefined'
       ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       : null
-    if (!SR) { setPhase('chat'); setTimeout(() => txtRef.current?.focus(), 80); return }
+
+    if (!SR) {
+      // Browser doesn't support speech recognition — fall back to text input
+      setPhase('chat'); setTimeout(() => txtRef.current?.focus(), 80); return
+    }
+
+    // Explicitly request microphone permission — triggers the browser dialog
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // Stop the test stream immediately; SpeechRecognition manages its own stream
+      stream.getTracks().forEach(t => t.stop())
+    } catch {
+      // User denied or device unavailable — fall back to text input
+      setPhase('chat'); setTimeout(() => txtRef.current?.focus(), 80); return
+    }
 
     const r = new SR()
     r.lang = lang === 'fr' ? 'fr-FR' : 'en-US'
@@ -163,7 +178,6 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
       if (t) send(t); else setPhase(msgs.length ? 'chat' : 'idle')
     }
     r.onerror = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
-    // onend fires after both result and error — reset if still stuck in listening
     r.onend   = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
     try { r.start(); recogRef.current = r }
     catch { setPhase(msgs.length ? 'chat' : 'idle') }
@@ -233,7 +247,7 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
         </div>
 
         {/* ── RIGHT: iPhone 17 Pro Max + video ───────────────── */}
-        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:24 }}>
+        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:28, width:'min(580px, 90vw)' }}>
 
           {/* Ambient glow behind phone */}
           <div style={{ position:'absolute', top:-30, left:-30, right:-30, height:700, background:'radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,92,255,0.18) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
@@ -432,8 +446,8 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
             </div>
           </div>
 
-          {/* ── Demo video below phone ── */}
-          <div style={{ width:310, borderRadius:18, overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 16px 48px rgba(0,0,0,0.5), 0 0 24px rgba(29,92,255,0.1)', position:'relative' }}>
+          {/* ── Demo video below phone — full column width ── */}
+          <div style={{ width:'100%', borderRadius:18, overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 24px 60px rgba(0,0,0,0.6), 0 0 40px rgba(29,92,255,0.12)', position:'relative' }}>
             {/* Top bar mimicking a media player */}
             <div style={{ background:'rgba(4,8,15,0.95)', padding:'8px 12px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ width:6, height:6, borderRadius:'50%', background:'#dc2626' }} />
