@@ -162,9 +162,11 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
       const t = e.results?.[0]?.[0]?.transcript
       if (t) send(t); else setPhase(msgs.length ? 'chat' : 'idle')
     }
-    r.onerror = () => setPhase(msgs.length ? 'chat' : 'idle')
-    r.onend   = () => { /* phase is stale in closure — rely on onresult/onerror */ }
-    r.start(); recogRef.current = r
+    r.onerror = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
+    // onend fires after both result and error — reset if still stuck in listening
+    r.onend   = () => setPhase(prev => prev === 'listening' ? (msgs.length ? 'chat' : 'idle') : prev)
+    try { r.start(); recogRef.current = r }
+    catch { setPhase(msgs.length ? 'chat' : 'idle') }
   }, [phase, lang, msgs.length, send])
 
   /* ── Form submit ────────────────────────────────────────────────── */
@@ -181,7 +183,7 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
     if (parseInt(capVal) !== capA + capB)            e2.cap   = tr.errCap
     if (Object.keys(e2).length) { setErrs(e2); return }
     setErrs({}); setPhase('success')
-    setTimeout(() => window.open(`https://t.me/Copilo_tech?start=web_${encodeURIComponent(name.trim())}`, '_blank'), 500)
+    setTimeout(() => window.open(`https://t.me/Copilo_TaxiBot?start=web_${encodeURIComponent(name.trim())}`, '_blank'), 500)
   }
 
   const listening = phase === 'listening'
@@ -192,7 +194,7 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
      RENDER
   ────────────────────────────────────────────────────────────────── */
   return (
-    <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', padding: '80px 0 60px' }}>
+    <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '80px 0 100px' }}>
 
       {/* Top glow */}
       <div style={{ position:'absolute', top:'-8%', left:'50%', transform:'translateX(-50%)', width:900, height:500, background:'radial-gradient(ellipse 60% 55% at 50% 0%, rgba(29,92,255,0.42) 0%, rgba(0,207,255,0.1) 40%, transparent 70%)', pointerEvents:'none' }} />
@@ -237,7 +239,45 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
           <div style={{ position:'absolute', inset:-30, background:'radial-gradient(ellipse 70% 60% at 50% 60%, rgba(29,92,255,0.18) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
 
           {/* ── iPhone 17 Pro Max shell ── */}
-          <div style={{ position:'relative', width:310, height:660, flexShrink:0 }}>
+          <div style={{ position:'relative', width:310, height:660, flexShrink:0, marginBottom: 50 }}>
+
+            {/* ── Floating microphone — inside phone div so it's always in bounds ── */}
+            {showMic && (
+              <button
+                onClick={toggleVoice}
+                disabled={busy}
+                aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
+                style={{
+                  position:'absolute',
+                  bottom: -34,   // half of 68px → button center sits on phone's bottom edge
+                  left:'50%', transform:'translateX(-50%)',
+                  width:68, height:68, borderRadius:'50%', border:'none',
+                  background: listening
+                    ? 'linear-gradient(135deg,#f97316,#dc2626)'
+                    : 'linear-gradient(135deg,#1d5cff,#00cfff)',
+                  boxShadow: listening
+                    ? '0 0 0 1.5px rgba(249,115,22,0.6), 0 0 44px rgba(249,115,22,0.5)'
+                    : '0 0 0 1.5px rgba(29,92,255,0.55), 0 0 44px rgba(29,92,255,0.45)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  cursor: busy ? 'not-allowed' : 'pointer',
+                  opacity: busy ? 0.45 : 1,
+                  transition:'background 0.3s, box-shadow 0.3s, transform 0.15s',
+                  zIndex: 30,       // above phone frame
+                  pointerEvents:'auto',
+                }}
+                onMouseEnter={e => { if (!busy) e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateX(-50%) scale(1)' }}
+              >
+                {(listening ? [0,0.4,0.8] : [0,0.7,1.4]).map((d,i) => (
+                  <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border:`1.5px solid ${listening ? 'rgba(249,115,22,0.4)' : 'rgba(29,92,255,0.35)'}`, animation:`ring 2s ease-out ${d}s infinite`, pointerEvents:'none' }} />
+                ))}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
+            )}
 
             {/* Black Titanium frame */}
             <div style={{
@@ -395,42 +435,6 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
             </div>
           </div>
 
-          {/* ── Floating microphone ── */}
-          {showMic && (
-            <button
-              onClick={toggleVoice}
-              disabled={busy}
-              aria-label={lang === 'fr' ? 'Parler à Copilo' : 'Talk to Copilo'}
-              style={{
-                position:'absolute', bottom:-26, left:'50%', transform:'translateX(-50%)',
-                width:68, height:68, borderRadius:'50%', border:'none',
-                background: listening
-                  ? 'linear-gradient(135deg,#f97316,#dc2626)'
-                  : 'linear-gradient(135deg,#1d5cff,#00cfff)',
-                boxShadow: listening
-                  ? '0 0 0 1px rgba(249,115,22,0.5), 0 0 40px rgba(249,115,22,0.45)'
-                  : '0 0 0 1px rgba(29,92,255,0.5), 0 0 40px rgba(29,92,255,0.4)',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                cursor: busy ? 'not-allowed' : 'pointer',
-                opacity: busy ? 0.45 : 1,
-                transition:'background 0.3s, box-shadow 0.3s, transform 0.15s',
-                zIndex:10,
-              }}
-              onMouseEnter={e => { if (!busy) e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateX(-50%) scale(1)' }}
-            >
-              {/* Pulse rings */}
-              {(listening ? [0,0.4,0.8] : [0,0.7,1.4]).map((d,i) => (
-                <span key={i} style={{ position:'absolute', inset:0, borderRadius:'50%', border: `1.5px solid ${listening ? 'rgba(249,115,22,0.45)' : 'rgba(29,92,255,0.38)'}`, animation:`ring 2s ease-out ${d}s infinite` }} />
-              ))}
-              {/* Mic icon */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'relative', zIndex:1 }}>
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" x2="12" y1="19" y2="22"/>
-              </svg>
-            </button>
-          )}
         </div>
       </div>
 
