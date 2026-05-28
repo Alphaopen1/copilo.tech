@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
-import VideoBanner from '@/components/VideoBanner'
 import Features from '@/components/Features'
 import HowItWorks from '@/components/HowItWorks'
 import AvatarSection from '@/components/AvatarSection'
@@ -30,7 +29,6 @@ export default function Home() {
 
       <main className="relative z-10">
         <Hero lang={lang} />
-        <VideoBanner />
         <Features lang={lang} />
         <HowItWorks lang={lang} />
         <AvatarSection lang={lang} />

@@ -159,7 +159,7 @@ export default function HowItWorks({ lang }: { lang: 'fr' | 'en' }) {
             const { Icon } = c
             const isHov = hovered === c.id
             return (
-              <a key={c.id} href="/onboard" data-reveal data-delay={String(i + 1)}
+              <a key={c.id} href={`/onboard?type=${c.id}`} data-reveal data-delay={String(i + 1)}
                 style={{
                   display:'block', textDecoration:'none',
                   padding: '28px 24px',
@@ -207,7 +207,7 @@ export default function HowItWorks({ lang }: { lang: 'fr' | 'en' }) {
 
         {/* CTA */}
         <div style={{ textAlign:'center' }}>
-          <a href="/onboard" style={{
+          <a href="/onboard?type=bot" style={{
             display:'inline-flex', alignItems:'center', gap:10,
             padding:'14px 32px', borderRadius:14,
             background:'linear-gradient(135deg, #1d5cff, #0e40c0)',

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import OnboardPage from '@/components/OnboardPage'
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function Page() {
-  return <OnboardPage />
+  return (
+    <Suspense fallback={null}>
+      <OnboardPage />
+    </Suspense>
+  )
 }
