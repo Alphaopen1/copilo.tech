@@ -11,6 +11,7 @@ import Footer from '@/components/Footer'
 import CustomCursor from '@/components/CustomCursor'
 import ProgressBar from '@/components/ProgressBar'
 import ScrollReveal from '@/components/ScrollReveal'
+import VideoBanner from '@/components/VideoBanner'
 
 export default function Home() {
   const [lang, setLang] = useState<'fr' | 'en'>('fr')
@@ -29,6 +30,7 @@ export default function Home() {
 
       <main className="relative z-10">
         <Hero lang={lang} />
+        <VideoBanner />
         <Features lang={lang} />
         <HowItWorks lang={lang} />
         <AvatarSection lang={lang} />

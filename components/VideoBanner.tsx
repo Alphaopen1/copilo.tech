@@ -3,6 +3,7 @@
 export default function VideoBanner() {
   return (
     <section
+      id="demo"
       style={{
         width: '100%',
         position: 'relative',
