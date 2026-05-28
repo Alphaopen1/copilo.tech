@@ -17,15 +17,15 @@ const T = {
     micHint: 'Appuie et parle',
     orType: 'ou tape un message…',
     replies: [
-      "Bonjour ! Je suis Copilo 🚗\n\nJe crée tes courses, calcule ton CA CPAM, gère les péages et t'alerte sur les doublets — tout en vocal, mains libres.\n\nEssaie un des exemples ↓",
-      "Top ! Pour activer la version complète — 3 mois gratuits — j'ai juste besoin de ton prénom et ton numéro 👇",
+      "Bonjour, je suis Copilo.\n\nJe crée tes courses, calcule ton CA CPAM, gère les péages et t'alerte sur les doublets — tout en vocal, mains libres.\n\nEssaie un des exemples ci-dessous ↓",
+      "Pour activer la version complète — 3 mois gratuits — j'ai juste besoin de ton prénom et ton numéro.",
     ],
     suggestions: [
-      { text: '🎙 Course Mme Dupont 9h, CHU Grenoble', reply: `✅ *Course créée !*\n📅 Demain 09:00 — Mme Dupont\n🏥 Arrivée : CHU Grenoble\n💰 CA estimé : *34,20 € CPAM*\n\nConfirme ou dis "annule" ?` },
-      { text: '📊 Mon CA cette semaine ?',              reply: `📊 *Semaine du 26 mai*\n✅ 6 courses · 148 km\n💰 CA CPAM : 214,80 €\n🛣️ Péages : 18,00 €\n─────────────\n📦 *Total : 232,80 €*\n📈 +9 % vs semaine passée` },
-      { text: '🛣️ Calcul CA : 38 km depuis Lyon',       reply: `💰 *Estimation CA CPAM*\n📍 Lyon → Dept 69 Rhône\n📏 38,0 km facturables\n💶 Tarif : 1,2100 €/km\n─────────────\n✅ *Total estimé : 59,68 €*` },
+      { text: 'Course Mme Dupont 9h, CHU Grenoble', reply: `Course créée !\nDemain 09:00 — Mme Dupont\nArrivée : CHU Grenoble\nCA estimé : 34,20 € CPAM\n\nConfirme ou dis "annule" ?` },
+      { text: 'Mon CA cette semaine ?',              reply: `Semaine du 26 mai\n6 courses · 148 km\nCA CPAM : 214,80 €\nPéages : 18,00 €\n─────────────\nTotal : 232,80 €\n+9 % vs semaine passée` },
+      { text: 'Calcul CA : 38 km depuis Lyon',       reply: `Estimation CA CPAM\nLyon → Dept 69 Rhône\n38,0 km facturables\nTarif : 1,2100 €/km\n─────────────\nTotal estimé : 59,68 €` },
     ],
-    formTitle: '🚀 Accès prioritaire',
+    formTitle: 'Accès prioritaire',
     formSub:   'Pour continuer avec Copilo sur Telegram',
     lName:     'Ton prénom',
     lPhone:    'Ton numéro',
@@ -53,15 +53,15 @@ const T = {
     micHint: 'Press and speak',
     orType: 'or type a message…',
     replies: [
-      "Hi! I'm Copilo 🚗\n\nI create rides, calculate CPAM revenue, track tolls and alert you on shared trips — all hands-free by voice.\n\nTry one of the examples ↓",
-      "Great! To unlock the full version — 3 months free — I just need your name and phone 👇",
+      "Hi, I'm Copilo.\n\nI create rides, calculate CPAM revenue, track tolls and alert you on shared trips — all hands-free by voice.\n\nTry one of the examples below ↓",
+      "To unlock the full version — 3 months free — I just need your name and phone.",
     ],
     suggestions: [
-      { text: '🎙 Ride Mrs. Dupont 9am, Grenoble Hospital', reply: `✅ *Ride created!*\n📅 Tomorrow 09:00 — Mrs. Dupont\n🏥 Dest: Grenoble Hospital\n💰 Estimated: *€34.20 CPAM*\n\nConfirm or say "cancel"?` },
-      { text: '📊 My revenue this week?',                   reply: `📊 *Week of May 26*\n✅ 6 rides · 148 km\n💰 CPAM revenue: €214.80\n🛣️ Tolls: €18.00\n─────────────\n📦 *Total: €232.80*\n📈 +9% vs last week` },
-      { text: '🛣️ Calculate: 38 km from Lyon',             reply: `💰 *CPAM Revenue Estimate*\n📍 Lyon → Dept 69 Rhône\n📏 38.0 billable km\n💶 Rate: €1.2100/km\n─────────────\n✅ *Estimated total: €59.68*` },
+      { text: 'Ride Mrs. Dupont 9am, Grenoble Hospital', reply: `Ride created!\nTomorrow 09:00 — Mrs. Dupont\nDest: Grenoble Hospital\nEstimated: €34.20 CPAM\n\nConfirm or say "cancel"?` },
+      { text: 'My revenue this week?',                   reply: `Week of May 26\n6 rides · 148 km\nCPAM revenue: €214.80\nTolls: €18.00\n─────────────\nTotal: €232.80\n+9% vs last week` },
+      { text: 'Calculate: 38 km from Lyon',             reply: `CPAM Revenue Estimate\nLyon → Dept 69 Rhône\n38.0 billable km\nRate: €1.2100/km\n─────────────\nEstimated total: €59.68` },
     ],
-    formTitle: '🚀 Priority access',
+    formTitle: 'Priority access',
     formSub:   'To continue with Copilo on Telegram',
     lName:     'Your first name',
     lPhone:    'Your phone',
@@ -288,7 +288,13 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
                     {/* Idle: suggestions */}
                     {msgs.length === 0 && phase === 'idle' && (
                       <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:14, padding:'0 8px 60px' }}>
-                        <div style={{ fontSize:30 }}>🎙️</div>
+                        <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(29,92,255,0.12)', border:'1px solid rgba(29,92,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(29,92,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" x2="12" y1="19" y2="22"/>
+                          </svg>
+                        </div>
                         <div style={{ fontFamily:"'Barlow',sans-serif", fontSize:12, color:'rgba(180,200,255,0.45)', textAlign:'center', lineHeight:1.6 }}>
                           {tr.micHint}
                         </div>
@@ -383,8 +389,9 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
                     <TgIcon /> {tr.submit}
                   </button>
 
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.3)', textAlign:'center', letterSpacing:'0.06em' }}>
-                    🔒 Aucune CB · RGPD · Données chiffrées
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.3)', textAlign:'center', letterSpacing:'0.06em', display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(180,200,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Aucune CB · RGPD · Données chiffrées
                   </div>
                 </form>
 
@@ -392,7 +399,11 @@ export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
 
                 /* SUCCESS */
                 <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, animation:'fadeUp 0.4s ease forwards' }}>
-                  <div style={{ fontSize:38 }}>🚀</div>
+                  <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
                   <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:16, color:'#f0f4ff', textTransform:'uppercase', textAlign:'center' }}>{tr.success}</div>
                 </div>
 

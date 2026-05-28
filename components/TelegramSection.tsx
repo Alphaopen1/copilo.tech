@@ -1,50 +1,100 @@
 'use client'
 import { useState, useEffect } from 'react'
 
+/* ── SVG scenario icons ───────────────────────────────────────────── */
+function CarIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l3-4h8l3 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+      <circle cx="7.5" cy="17" r="2.5"/>
+      <circle cx="16.5" cy="17" r="2.5"/>
+    </svg>
+  )
+}
+function SunIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4"/>
+      <line x1="12" y1="2" x2="12" y2="5"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+      <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+      <line x1="2" y1="12" x2="5" y2="12"/>
+      <line x1="19" y1="12" x2="22" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+      <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+    </svg>
+  )
+}
+function UsersIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  )
+}
+function RouteIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="19" r="3"/>
+      <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+      <circle cx="18" cy="5" r="3"/>
+    </svg>
+  )
+}
+
 /* ── Scenarios ─────────────────────────────────────────────────────── */
-const SCENARIOS = {
+type IconKey = 'car' | 'sun' | 'users' | 'route'
+
+const SCENARIOS: Record<'fr'|'en', Array<{
+  id: string; label: string; iconKey: IconKey;
+  messages: Array<{ role: string; text: string; delay: number }>
+}>> = {
   fr: [
     {
       id: 'course',
       label: 'Ajouter une course',
-      icon: '🚖',
+      iconKey: 'car',
       messages: [
-        { role: 'u', text: '🎙️ Course demain 14h30 Nice → CHU Pasteur, M. Bernard', delay: 0 },
-        { role: 'c', text: '📋 Voici la course :\n• 28/05 à 14:30 — M. Bernard\n• Nice → CHU Pasteur · ⏱ 22 min\n• 💰 CA CPAM 18.40 €\n\nConfirmer ?', delay: 1600 },
-        { role: 'u', text: '✅', delay: 3200 },
-        { role: 'c', text: '✅ Course #87 créée\n📅 Google Calendar mis à jour\n🔔 Rappel dans 13h30', delay: 4800 },
+        { role: 'u', text: 'Course demain 14h30 Nice → CHU Pasteur, M. Bernard', delay: 0 },
+        { role: 'c', text: 'Voici la course :\n• 28/05 à 14:30 — M. Bernard\n• Nice → CHU Pasteur · 22 min\n• CA CPAM 18.40 €\n\nConfirmer ?', delay: 1600 },
+        { role: 'u', text: 'Oui confirmer', delay: 3200 },
+        { role: 'c', text: 'Course #87 créée\nGoogle Calendar mis à jour\nRappel dans 13h30', delay: 4800 },
       ],
     },
     {
       id: 'brief',
       label: 'Brief du matin',
-      icon: '🌅',
+      iconKey: 'sun',
       messages: [
-        { role: 'c', text: '🌅 Bonjour ! Voici ton brief du 28/05 :\n\n• 3 courses planifiées\n• 09:00 – Mme Dupont → Cannes\n• 11:30 – M. Karim → Aéroport NCE\n• 15:00 – Mme Leroy → Clinique\n\n💰 CA estimé : 142.80 €\n🛣️ Péages estimés : 8.40 €', delay: 0 },
-        { role: 'u', text: "C'est noté, merci Copilo 👍", delay: 2000 },
-        { role: 'c', text: '💪 Bonne route ! Je te contacte 15 min avant chaque course.', delay: 3600 },
+        { role: 'c', text: 'Bonjour ! Voici ton brief du 28/05 :\n\n• 3 courses planifiées\n• 09:00 – Mme Dupont → Cannes\n• 11:30 – M. Karim → Aéroport NCE\n• 15:00 – Mme Leroy → Clinique\n\nCA estimé : 142.80 €\nPéages estimés : 8.40 €', delay: 0 },
+        { role: 'u', text: "C'est noté, merci Copilo", delay: 2000 },
+        { role: 'c', text: 'Bonne route ! Je te contacte 15 min avant chaque course.', delay: 3600 },
       ],
     },
     {
       id: 'doublet',
       label: 'Doublet détecté',
-      icon: '👥',
+      iconKey: 'users',
       messages: [
-        { role: 'u', text: '🎙️ Course demain 9h Nice → Cannes, M. Hajj', delay: 0 },
-        { role: 'c', text: "🔍 Doublet possible détecté !\n\nMme Dupont part aussi de Nice → Cannes demain 09:00.\n\nFusionner en course partagée ?\n• 1 seul péage\n• CA CPAM par patient (abatement -23%)", delay: 1800 },
-        { role: 'u', text: '✅ Fusionner', delay: 3400 },
-        { role: 'c', text: '✅ Course doublet #88 créée\n• Mme Dupont + M. Hajj\n• 💰 46.20 € × 2 patients\n📅 Calendrier mis à jour en orange', delay: 5000 },
+        { role: 'u', text: 'Course demain 9h Nice → Cannes, M. Hajj', delay: 0 },
+        { role: 'c', text: "Doublet possible détecté !\n\nMme Dupont part aussi de Nice → Cannes demain 09:00.\n\nFusionner en course partagée ?\n• 1 seul péage\n• CA CPAM par patient (abatement -23%)", delay: 1800 },
+        { role: 'u', text: 'Oui, fusionner', delay: 3400 },
+        { role: 'c', text: 'Course doublet #88 créée\n• Mme Dupont + M. Hajj\n• 46.20 € × 2 patients\nCalendrier mis à jour en orange', delay: 5000 },
       ],
     },
     {
       id: 'peage',
       label: 'Note de péage',
-      icon: '🛣️',
+      iconKey: 'route',
       messages: [
-        { role: 'u', text: '🎙️ Péage A8 ce matin, 4.80 €', delay: 0 },
-        { role: 'c', text: '🛣️ Péage mémorisé :\n• A8 · 4.80 € · 28/05 09:14\n\nCe péage sera automatiquement associé aux courses Nice → Cannes.', delay: 1600 },
-        { role: 'u', text: 'Parfait 🙏', delay: 3000 },
-        { role: 'c', text: "✅ Dans 2 semaines, je m'en souviendrai automatiquement.", delay: 4400 },
+        { role: 'u', text: 'Péage A8 ce matin, 4.80 €', delay: 0 },
+        { role: 'c', text: 'Péage mémorisé :\n• A8 · 4.80 € · 28/05 09:14\n\nCe péage sera automatiquement associé aux courses Nice → Cannes.', delay: 1600 },
+        { role: 'u', text: 'Parfait merci', delay: 3000 },
+        { role: 'c', text: "Dans 2 semaines, je m'en souviendrai automatiquement.", delay: 4400 },
       ],
     },
   ],
@@ -52,44 +102,44 @@ const SCENARIOS = {
     {
       id: 'course',
       label: 'Add a ride',
-      icon: '🚖',
+      iconKey: 'car',
       messages: [
-        { role: 'u', text: '🎙️ Ride tomorrow 2:30pm Nice → Pasteur Hospital, Mr Bernard', delay: 0 },
-        { role: 'c', text: '📋 Ride details:\n• May 28 at 14:30 — Mr Bernard\n• Nice → Pasteur Hospital · ⏱ 22 min\n• 💰 Revenue €18.40\n\nConfirm?', delay: 1600 },
-        { role: 'u', text: '✅', delay: 3200 },
-        { role: 'c', text: '✅ Ride #87 created\n📅 Google Calendar updated\n🔔 Reminder in 13h30', delay: 4800 },
+        { role: 'u', text: 'Ride tomorrow 2:30pm Nice → Pasteur Hospital, Mr Bernard', delay: 0 },
+        { role: 'c', text: 'Ride details:\n• May 28 at 14:30 — Mr Bernard\n• Nice → Pasteur Hospital · 22 min\n• Revenue €18.40\n\nConfirm?', delay: 1600 },
+        { role: 'u', text: 'Yes confirm', delay: 3200 },
+        { role: 'c', text: 'Ride #87 created\nGoogle Calendar updated\nReminder in 13h30', delay: 4800 },
       ],
     },
     {
       id: 'brief',
       label: 'Morning brief',
-      icon: '🌅',
+      iconKey: 'sun',
       messages: [
-        { role: 'c', text: '🌅 Good morning! Here is your brief for May 28:\n\n• 3 rides scheduled\n• 09:00 – Ms Dupont → Cannes\n• 11:30 – Mr Karim → NCE Airport\n• 15:00 – Ms Leroy → Clinic\n\n💰 Estimated revenue: €142.80\n🛣️ Estimated tolls: €8.40', delay: 0 },
-        { role: 'u', text: 'Got it, thanks Copilo 👍', delay: 2000 },
-        { role: 'c', text: '💪 Safe drive! I\'ll contact you 15 min before each ride.', delay: 3600 },
+        { role: 'c', text: 'Good morning! Here is your brief for May 28:\n\n• 3 rides scheduled\n• 09:00 – Ms Dupont → Cannes\n• 11:30 – Mr Karim → NCE Airport\n• 15:00 – Ms Leroy → Clinic\n\nEstimated revenue: €142.80\nEstimated tolls: €8.40', delay: 0 },
+        { role: 'u', text: 'Got it, thanks Copilo', delay: 2000 },
+        { role: 'c', text: "Safe drive! I'll contact you 15 min before each ride.", delay: 3600 },
       ],
     },
     {
       id: 'doublet',
       label: 'Shared ride detected',
-      icon: '👥',
+      iconKey: 'users',
       messages: [
-        { role: 'u', text: '🎙️ Ride tomorrow 9am Nice → Cannes, Mr Hajj', delay: 0 },
-        { role: 'c', text: '🔍 Possible shared ride detected!\n\nMs Dupont also departs Nice → Cannes tomorrow 09:00.\n\nMerge into a shared ride?\n• 1 toll only\n• Revenue per patient (−23% abatement)', delay: 1800 },
-        { role: 'u', text: '✅ Merge', delay: 3400 },
-        { role: 'c', text: '✅ Shared ride #88 created\n• Ms Dupont + Mr Hajj\n• 💰 €46.20 × 2 patients\n📅 Calendar updated in orange', delay: 5000 },
+        { role: 'u', text: 'Ride tomorrow 9am Nice → Cannes, Mr Hajj', delay: 0 },
+        { role: 'c', text: 'Possible shared ride detected!\n\nMs Dupont also departs Nice → Cannes tomorrow 09:00.\n\nMerge into a shared ride?\n• 1 toll only\n• Revenue per patient (−23% abatement)', delay: 1800 },
+        { role: 'u', text: 'Yes, merge', delay: 3400 },
+        { role: 'c', text: 'Shared ride #88 created\n• Ms Dupont + Mr Hajj\n• €46.20 × 2 patients\nCalendar updated in orange', delay: 5000 },
       ],
     },
     {
       id: 'peage',
       label: 'Toll note',
-      icon: '🛣️',
+      iconKey: 'route',
       messages: [
-        { role: 'u', text: '🎙️ A8 toll this morning, €4.80', delay: 0 },
-        { role: 'c', text: '🛣️ Toll memorized:\n• A8 · €4.80 · May 28 09:14\n\nThis toll will be auto-linked to Nice → Cannes rides.', delay: 1600 },
-        { role: 'u', text: 'Perfect 🙏', delay: 3000 },
-        { role: 'c', text: "✅ In 2 weeks, I'll remember it automatically.", delay: 4400 },
+        { role: 'u', text: 'A8 toll this morning, €4.80', delay: 0 },
+        { role: 'c', text: 'Toll memorized:\n• A8 · €4.80 · May 28 09:14\n\nThis toll will be auto-linked to Nice → Cannes rides.', delay: 1600 },
+        { role: 'u', text: 'Perfect thanks', delay: 3000 },
+        { role: 'c', text: "In 2 weeks, I'll remember it automatically.", delay: 4400 },
       ],
     },
   ],
@@ -131,6 +181,15 @@ const T2 = {
   },
 }
 
+function ScenarioIcon({ iconKey }: { iconKey: IconKey }) {
+  switch (iconKey) {
+    case 'car':   return <CarIcon />
+    case 'sun':   return <SunIcon />
+    case 'users': return <UsersIcon />
+    case 'route': return <RouteIcon />
+  }
+}
+
 /* ── AnimatedChat ────────────────────────────────────────────────── */
 function AnimatedChat({ messages }: { messages: { role: string; text: string; delay: number }[] }) {
   const [visible, setVisible] = useState(0)
@@ -150,14 +209,10 @@ function AnimatedChat({ messages }: { messages: { role: string; text: string; de
         <div
           key={i}
           className="msg-in"
-          style={{
-            display: 'flex',
-            justifyContent: m.role === 'u' ? 'flex-end' : 'flex-start',
-          }}
+          style={{ display: 'flex', justifyContent: m.role === 'u' ? 'flex-end' : 'flex-start' }}
         >
           <div style={{
-            maxWidth: '85%',
-            padding: '9px 13px',
+            maxWidth: '85%', padding: '9px 13px',
             borderRadius: m.role === 'u' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
             fontSize: 12.5, lineHeight: 1.65, whiteSpace: 'pre-line',
             fontFamily: "'Barlow', sans-serif",
@@ -181,8 +236,7 @@ function AnimatedChat({ messages }: { messages: { role: string; text: string; de
             {[0, 0.2, 0.4].map((d, i) => (
               <span key={i} style={{
                 width: 5, height: 5, borderRadius: '50%',
-                background: 'rgba(29,92,255,0.7)',
-                display: 'inline-block',
+                background: 'rgba(29,92,255,0.7)', display: 'inline-block',
                 animation: `blink 1.2s ${d}s ease-in-out infinite`,
               }} />
             ))}
@@ -244,14 +298,16 @@ export default function TelegramSection({ lang }: { lang: 'fr' | 'en' }) {
                   background: active === i ? 'rgba(29,92,255,0.12)' : 'rgba(255,255,255,0.02)',
                   border: '1px solid ' + (active === i ? 'rgba(29,92,255,0.4)' : 'rgba(255,255,255,0.06)'),
                   cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                  color: active === i ? '#f0f4ff' : 'rgba(180,200,255,0.5)',
                 }}
               >
-                <span style={{ fontSize: 18 }}>{s.icon}</span>
+                <span style={{ flexShrink: 0, opacity: active === i ? 1 : 0.6 }}>
+                  <ScenarioIcon iconKey={s.iconKey} />
+                </span>
                 <span style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 600, fontSize: 13, letterSpacing: '0.03em',
                   textTransform: 'uppercase',
-                  color: active === i ? '#f0f4ff' : 'rgba(180,200,255,0.5)',
                 }}>
                   {s.label}
                 </span>
@@ -310,10 +366,10 @@ export default function TelegramSection({ lang }: { lang: 'fr' | 'en' }) {
                   <div style={{ fontWeight: 700, fontSize: 15, color: '#f0f4ff', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                     @Copilo_TaxiBot
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
                     <span className="mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
-                      {scenarios[active].icon} {scenarios[active].label}
+                      {scenarios[active].label}
                     </span>
                   </div>
                 </div>

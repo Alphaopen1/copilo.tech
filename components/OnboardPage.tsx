@@ -1,8 +1,93 @@
 'use client'
 import { useState } from 'react'
 
+/* ── SVG icons ──────────────────────────────────────────────────────── */
+function BotIcon({ color = '#60a5fa', size = 28 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="8" width="18" height="13" rx="3" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      <circle cx="9" cy="14" r="1.5" fill={color} stroke="none" />
+      <circle cx="15" cy="14" r="1.5" fill={color} stroke="none" />
+      <path d="M12 1v3" />
+    </svg>
+  )
+}
+function GroupIcon({ color = '#a78bfa', size = 28 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
+function PlusCircleIcon({ color = '#34d399', size = 28 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+    </svg>
+  )
+}
+function CheckCircleIcon({ color = '#34d399', size = 20 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  )
+}
+function LockSmIcon({ color = '#94a3b8' }: { color?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+function BroadcastIcon({ color = '#94a3b8' }: { color?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8a6 6 0 0 1 0 8" />
+      <path d="M6 8a6 6 0 0 0 0 8" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M21 5a10.5 10.5 0 0 1 0 14" />
+      <path d="M3 5a10.5 10.5 0 0 0 0 14" />
+    </svg>
+  )
+}
+function PhoneIcon({ color = '#60a5fa' }: { color?: string }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2" />
+      <circle cx="12" cy="17" r="1" fill={color} stroke="none" />
+    </svg>
+  )
+}
+function KeyIcon({ color = '#60a5fa' }: { color?: string }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="M21 2l-9.6 9.6" />
+      <path d="M15.5 7.5L17 6l2 2 1.5-1.5" />
+    </svg>
+  )
+}
+function SpinnerIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite' }}>
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" opacity="0.3" />
+      <path d="M12 2v4" />
+    </svg>
+  )
+}
+
 /* ── Types ─────────────────────────────────────────────────────────── */
 type CardId = 'bot' | 'group' | 'admin'
+type CardIconKey = 'bot' | 'group' | 'plus'
 
 interface BotForm   { firstName: string; phone: string }
 interface GroupForm  { groupName: string; type: 'private' | 'public'; description: string }
@@ -87,7 +172,6 @@ export default function OnboardPage() {
   const [adminLoading, setAdminLoading] = useState(false)
   const [adminResult, setAdminResult]   = useState<{ steps?: string[]; addBotUrl?: string } | null>(null)
   const [adminApiError, setAdminApiError] = useState(false)
-  const adminDone = adminResult !== null
 
   /* ── Bot submit — 100% client-side, zero API ────────────────────── */
   const submitBot = (e: React.FormEvent) => {
@@ -122,8 +206,6 @@ export default function OnboardPage() {
     setGroupLoading(true)
 
     const gName   = group.groupName.trim()
-    // ?startgroup= ouvre un dialog de sélection de groupe dans Telegram
-    // L'utilisateur choisit son groupe existant → le bot rejoint + s'initialise
     const payload = btoa(`g:${gName}`).slice(0, 60).replace(/=/g, '')
 
     setGroupResult({ inviteLink: `https://t.me/Copilo_TaxiBot?startgroup=${payload}` })
@@ -150,18 +232,26 @@ export default function OnboardPage() {
         '2. Paramètres → Administrateurs → Ajouter un admin',
         '3. Recherche @Copilo_TaxiBot et sélectionne-le',
         '4. Active : Gérer les messages + Épingler les messages',
-        '5. Copilo est actif dans ton groupe ✅',
+        '5. Copilo est actif dans ton groupe',
       ],
     })
     setAdminLoading(false)
   }
 
   /* ── Card data ─────────────────────────────────────────────────── */
-  const cards: { id: CardId; icon: string; title: string; sub: string }[] = [
-    { id: 'bot',   icon: '🤖', title: 'Mon Copilo perso',   sub: 'Bot @Copilo_de_PRENOM dédié à toi' },
-    { id: 'group', icon: '👥', title: 'Groupe / Canal',      sub: 'Copilo dispatche les courses dans ton groupe' },
-    { id: 'admin', icon: '➕', title: 'Rejoindre en admin',  sub: 'Invite Copilo dans un groupe existant' },
+  const cards: { id: CardId; iconKey: CardIconKey; title: string; sub: string }[] = [
+    { id: 'bot',   iconKey: 'bot',   title: 'Mon Copilo perso',   sub: 'Bot @Copilo_de_PRENOM dédié à toi' },
+    { id: 'group', iconKey: 'group', title: 'Groupe / Canal',      sub: 'Copilo dispatche les courses dans ton groupe' },
+    { id: 'admin', iconKey: 'plus',  title: 'Rejoindre en admin',  sub: 'Invite Copilo dans un groupe existant' },
   ]
+
+  /* ── Card icon renderer ─────────────────────────────────────────── */
+  const CARD_COLORS: Record<CardId, string> = { bot: '#60a5fa', group: '#a78bfa', admin: '#34d399' }
+  function CardIconEl({ iconKey, color }: { iconKey: CardIconKey; color: string }) {
+    if (iconKey === 'bot')   return <BotIcon color={color} size={30} />
+    if (iconKey === 'group') return <GroupIcon color={color} size={30} />
+    return <PlusCircleIcon color={color} size={30} />
+  }
 
   /* ── Shared card style ─────────────────────────────────────────── */
   const cardStyle = (id: CardId): React.CSSProperties => ({
@@ -186,6 +276,7 @@ export default function OnboardPage() {
   function NotReady() {
     return (
       <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
         padding: '16px 20px',
         borderRadius: 12,
         background: 'rgba(249,115,22,0.07)',
@@ -195,7 +286,10 @@ export default function OnboardPage() {
         fontSize: 14,
         lineHeight: 1.5,
       }}>
-        ⏳ En cours de déploiement — reviens bientôt.
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(249,115,22,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        En cours de déploiement — reviens bientôt.
       </div>
     )
   }
@@ -308,7 +402,14 @@ export default function OnboardPage() {
                 }
               }}
             >
-              <div style={{ fontSize: 32 }}>{c.icon}</div>
+              <div style={{
+                width: 48, height: 48, borderRadius: 14,
+                background: `${CARD_COLORS[c.id]}18`,
+                border: `1px solid ${CARD_COLORS[c.id]}33`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <CardIconEl iconKey={c.iconKey} color={CARD_COLORS[c.id]} />
+              </div>
               <div>
                 <div style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
@@ -366,6 +467,7 @@ export default function OnboardPage() {
                 border: '1px solid rgba(255,255,255,0.07)',
               }}>
                 <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 10,
                   letterSpacing: '0.14em',
@@ -373,7 +475,8 @@ export default function OnboardPage() {
                   color: 'rgba(0,207,255,0.7)',
                   marginBottom: 12,
                 }}>
-                  🤖 // Bot personnel
+                  <BotIcon color="rgba(0,207,255,0.7)" size={14} />
+                  // Bot personnel
                 </div>
                 <h2 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
@@ -392,6 +495,7 @@ export default function OnboardPage() {
                 {botResult ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
                       padding: '20px 24px',
                       borderRadius: 14,
                       background: 'rgba(5,150,105,0.08)',
@@ -402,7 +506,8 @@ export default function OnboardPage() {
                       fontSize: 18,
                       letterSpacing: '0.03em',
                     }}>
-                      ✅ @{botResult.name} est prêt !
+                      <CheckCircleIcon size={22} />
+                      @{botResult.name} est prêt !
                     </div>
                     {botResult.message && (
                       <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: 14, color: 'rgba(180,200,255,0.6)', lineHeight: 1.6, margin: 0 }}>
@@ -464,6 +569,7 @@ export default function OnboardPage() {
                       disabled={botLoading}
                       className="btn-primary"
                       style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                         padding: '14px 24px',
                         borderRadius: 12,
                         border: 'none',
@@ -477,7 +583,7 @@ export default function OnboardPage() {
                         opacity: botLoading ? 0.7 : 1,
                       }}
                     >
-                      {botLoading ? 'Création…' : 'Créer mon bot →'}
+                      {botLoading ? <><SpinnerIcon /> Création…</> : 'Créer mon bot →'}
                     </button>
                   </form>
                 )}
@@ -493,6 +599,7 @@ export default function OnboardPage() {
                 border: '1px solid rgba(255,255,255,0.07)',
               }}>
                 <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 10,
                   letterSpacing: '0.14em',
@@ -500,7 +607,8 @@ export default function OnboardPage() {
                   color: 'rgba(0,207,255,0.7)',
                   marginBottom: 12,
                 }}>
-                  👥 // Groupe / Canal
+                  <GroupIcon color="rgba(0,207,255,0.7)" size={14} />
+                  // Groupe / Canal
                 </div>
                 <h2 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
@@ -549,7 +657,10 @@ export default function OnboardPage() {
                         Type
                       </span>
                       <div style={{ display: 'flex', gap: 10 }}>
-                        {([['private', '🔒 Groupe privé'], ['public', '📢 Canal public']] as const).map(([val, label]) => (
+                        {([
+                          ['private', 'Groupe privé', <LockSmIcon key="l" color={group.type === 'private' ? '#f0f4ff' : 'rgba(180,200,255,0.5)'} />],
+                          ['public',  'Canal public',  <BroadcastIcon key="b" color={group.type === 'public' ? '#f0f4ff' : 'rgba(180,200,255,0.5)'} />],
+                        ] as const).map(([val, label, icon]) => (
                           <label key={val} style={{
                             flex: 1,
                             display: 'flex',
@@ -570,6 +681,7 @@ export default function OnboardPage() {
                               onChange={() => setGroup(p => ({ ...p, type: val }))}
                               style={{ accentColor: '#1d5cff' }}
                             />
+                            {icon}
                             <span style={{
                               fontFamily: "'Barlow', sans-serif",
                               fontSize: 13,
@@ -603,6 +715,7 @@ export default function OnboardPage() {
                       disabled={groupLoading}
                       className="btn-primary"
                       style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                         padding: '14px 24px',
                         borderRadius: 12,
                         border: 'none',
@@ -616,7 +729,7 @@ export default function OnboardPage() {
                         opacity: groupLoading ? 0.7 : 1,
                       }}
                     >
-                      {groupLoading ? 'Création…' : 'Créer le groupe →'}
+                      {groupLoading ? <><SpinnerIcon /> Création…</> : 'Créer le groupe →'}
                     </button>
                   </form>
                 )}
@@ -632,6 +745,7 @@ export default function OnboardPage() {
                 border: '1px solid rgba(255,255,255,0.07)',
               }}>
                 <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 10,
                   letterSpacing: '0.14em',
@@ -639,7 +753,8 @@ export default function OnboardPage() {
                   color: 'rgba(0,207,255,0.7)',
                   marginBottom: 12,
                 }}>
-                  ➕ // Admin existant
+                  <PlusCircleIcon color="rgba(0,207,255,0.7)" size={14} />
+                  // Admin existant
                 </div>
                 <h2 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
@@ -656,6 +771,7 @@ export default function OnboardPage() {
                 {adminResult ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
                       padding: '20px 24px',
                       borderRadius: 14,
                       background: 'rgba(5,150,105,0.08)',
@@ -665,7 +781,8 @@ export default function OnboardPage() {
                       fontWeight: 700,
                       fontSize: 18,
                     }}>
-                      ✅ Suis les étapes ci-dessous
+                      <CheckCircleIcon size={22} />
+                      Suis les étapes ci-dessous
                     </div>
                     {adminResult.steps && (
                       <div style={{
@@ -774,6 +891,7 @@ export default function OnboardPage() {
                       disabled={adminLoading}
                       className="btn-primary"
                       style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                         padding: '14px 24px',
                         borderRadius: 12,
                         border: 'none',
@@ -787,7 +905,7 @@ export default function OnboardPage() {
                         opacity: adminLoading ? 0.7 : 1,
                       }}
                     >
-                      {adminLoading ? 'Vérification…' : "J'ai ajouté Copilo →"}
+                      {adminLoading ? <><SpinnerIcon /> Vérification…</> : "J'ai ajouté Copilo →"}
                     </button>
                   </form>
                 )}
@@ -824,15 +942,15 @@ function GroupWizard({
   const steps = [
     {
       num: 1,
-      icon: '📱',
+      icon: <PhoneIcon color="#60a5fa" />,
       title: 'Crée le groupe Telegram',
-      desc: <>Dans Telegram : icône ✏️ en haut à droite → <strong style={{ color: '#f0f4ff' }}>Nouveau groupe</strong> → nomme-le <strong style={{ color: '#00cfff' }}>&ldquo;{groupName}&rdquo;</strong> et ajoute au moins un contact.</>,
+      desc: <>Dans Telegram : nouvelle conversation → <strong style={{ color: '#f0f4ff' }}>Nouveau groupe</strong> → nomme-le <strong style={{ color: '#00cfff' }}>&ldquo;{groupName}&rdquo;</strong> et ajoute au moins un contact.</>,
       cta: null as null | { label: string; href?: string; onClick?: () => void },
       confirm: 'Groupe créé →',
     },
     {
       num: 2,
-      icon: '🤖',
+      icon: <BotIcon color="#60a5fa" size={15} />,
       title: 'Ajoute @Copilo_TaxiBot',
       desc: <>Clique sur le bouton — Telegram affiche tes groupes. Sélectionne <strong style={{ color: '#00cfff' }}>&ldquo;{groupName}&rdquo;</strong> et valide.</>,
       cta: { label: 'Ajouter @Copilo_TaxiBot dans mon groupe', href: inviteLink },
@@ -840,27 +958,35 @@ function GroupWizard({
     },
     {
       num: 3,
-      icon: '🔑',
+      icon: <KeyIcon color="#60a5fa" />,
       title: 'Nomme Copilo administrateur',
       desc: <>Dans ton groupe : <strong style={{ color: '#f0f4ff' }}>tape sur @Copilo_TaxiBot</strong> → Promouvoir admin → active <strong style={{ color: '#f0f4ff' }}>Gérer les messages</strong>. Indispensable pour le dispatch.</>,
       cta: null,
-      confirm: 'Admin configuré ✅',
+      confirm: 'Admin configuré',
     },
   ]
 
   if (step === 4) {
     return (
       <div style={{
-        padding: '28px 24px',
+        padding: '32px 24px',
         borderRadius: 14,
         background: 'rgba(5,150,105,0.08)',
         border: '1px solid rgba(5,150,105,0.35)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 14,
         animation: 'fadeUp 0.35s ease forwards',
       }}>
-        <div style={{ fontSize: 32 }}>🎉</div>
+        {/* Success icon */}
+        <div style={{
+          width: 52, height: 52, borderRadius: '50%',
+          background: 'rgba(52,211,153,0.15)',
+          border: '1.5px solid rgba(52,211,153,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CheckCircleIcon color="#34d399" size={28} />
+        </div>
         <div style={{
           fontFamily: "'Barlow Condensed', sans-serif",
           fontWeight: 800,
@@ -879,7 +1005,7 @@ function GroupWizard({
           margin: 0,
         }}>
           @Copilo_TaxiBot est actif dans <strong style={{ color: '#f0f4ff' }}>&ldquo;{groupName}&rdquo;</strong>.<br />
-          Le dispatch de courses s'active automatiquement. 🚗
+          Le dispatch de courses s&apos;active automatiquement.
         </p>
       </div>
     )
@@ -914,7 +1040,11 @@ function GroupWizard({
                 transition: 'all 0.3s',
                 boxShadow: active ? '0 0 14px rgba(29,92,255,0.25)' : 'none',
               }}>
-                {done ? '✓' : n}
+                {done ? (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : n}
               </div>
               {i < 2 && (
                 <div style={{
@@ -945,7 +1075,14 @@ function GroupWizard({
           animation: 'fadeUp 0.35s ease forwards',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 22 }}>{st.icon}</span>
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: 'rgba(96,165,250,0.12)',
+              border: '1px solid rgba(96,165,250,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {st.icon}
+            </div>
             <div style={{
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,
@@ -1039,7 +1176,13 @@ function GroupWizard({
           gap: 10,
           opacity: 0.45,
         }}>
-          <span style={{ fontSize: 16 }}>{st.icon}</span>
+          <div style={{
+            width: 26, height: 26, borderRadius: 8,
+            background: 'rgba(96,165,250,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {st.icon}
+          </div>
           <div style={{
             fontFamily: "'Barlow', sans-serif",
             fontSize: 13,

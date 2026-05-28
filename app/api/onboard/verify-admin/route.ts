@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         '2. Va dans Paramètres → Administrateurs',
         '3. Ajoute @Copilo_TaxiBot comme administrateur',
         '4. Active : Gérer les messages + Épingler les messages',
-        '5. Copilo est maintenant actif dans ton groupe ✅',
+        '5. Copilo est maintenant actif dans ton groupe',
       ],
     })
   } catch (err) {

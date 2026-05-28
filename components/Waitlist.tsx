@@ -1,6 +1,26 @@
 'use client'
 import { useState } from 'react'
 
+function CheckCircleIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  )
+}
+
+function PersonIcon({ color }: { color: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={color} stroke="none">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  )
+}
+
+const AVATAR_COLORS = ['#1d5cff', '#7c3aed', '#0891b2', '#059669', '#d97706']
+
 const T = {
   fr: {
     label: '// ACCÈS ANTICIPÉ',
@@ -8,8 +28,8 @@ const T = {
     sub: 'Beta privée. Inscris-toi pour recevoir ton accès en priorité.',
     ph: 'ton@email.pro',
     cta: 'Rejoindre',
-    ok: '🎉 Tu es sur la liste — on te contacte très bientôt.',
-    profiles: ['Taxi','VTC','Ambulancier','Commercial','VRP','Livreur'],
+    ok: 'Tu es sur la liste — on te contacte très bientôt.',
+    profiles: ['Taxi', 'VTC'],
     pl: 'Tu es :',
     privacy: 'Pas de spam. RGPD. Désinscription en un clic.',
     count: '+240 pros déjà inscrits',
@@ -20,8 +40,8 @@ const T = {
     sub: 'Private beta. Sign up to get priority access.',
     ph: 'your@email.pro',
     cta: 'Join',
-    ok: '🎉 You\'re on the list — we\'ll be in touch soon.',
-    profiles: ['Taxi','VTC','Ambulance','Sales','Field Rep','Delivery'],
+    ok: 'You\'re on the list — we\'ll be in touch soon.',
+    profiles: ['Taxi', 'VTC'],
     pl: 'You are:',
     privacy: 'No spam. GDPR. Unsubscribe in one click.',
     count: '+240 pros already signed up',
@@ -58,11 +78,13 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
 
         {done ? (
           <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
             padding: '28px 32px', borderRadius: 16,
             background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.3)',
             color: '#34d399', fontSize: 17, fontWeight: 600,
             fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.03em',
           }}>
+            <CheckCircleIcon />
             {tr.ok}
           </div>
         ) : (
@@ -152,14 +174,16 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
         {/* Social proof */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 36 }}>
           <div style={{ display: 'flex' }}>
-            {['🧑‍✈️','👩‍⚕️','🧔','👩','🧑'].map((e, i) => (
+            {AVATAR_COLORS.map((color, i) => (
               <div key={i} style={{
                 width: 30, height: 30, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.06)',
+                background: `${color}22`,
                 border: '2px solid rgba(4,8,15,1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, marginLeft: i > 0 ? -8 : 0,
-              }}>{e}</div>
+                marginLeft: i > 0 ? -8 : 0,
+              }}>
+                <PersonIcon color={color} />
+              </div>
             ))}
           </div>
           <span className="mono" style={{ fontSize: 12, color: 'rgba(180,200,255,0.4)' }}>
