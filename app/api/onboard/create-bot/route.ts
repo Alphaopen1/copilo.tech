@@ -24,17 +24,24 @@ export async function POST(req: NextRequest) {
     }
 
     // Si un backend externe est configuré, on le proxie
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    // API_URL (server-only) prend priorité sur NEXT_PUBLIC_API_URL (build-time)
+    const apiUrl = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL
     if (apiUrl) {
-      const upstream = await fetch(`${apiUrl}/api/onboard/create-bot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, phone }),
-        signal: AbortSignal.timeout(8000),
-      })
-      if (upstream.ok) {
-        const data = await upstream.json()
-        return NextResponse.json(data)
+      try {
+        const upstream = await fetch(`${apiUrl}/api/onboard/create-bot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, phone }),
+          signal: AbortSignal.timeout(8000),
+        })
+        if (upstream.ok) {
+          const data = await upstream.json()
+          return NextResponse.json(data)
+        }
+        console.error('[onboard/create-bot] upstream error', upstream.status)
+      } catch (upstreamErr) {
+        console.error('[onboard/create-bot] upstream unreachable', upstreamErr)
+        // Fallback sur le mode standalone si le backend est temporairement indisponible
       }
     }
 

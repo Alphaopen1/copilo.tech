@@ -18,17 +18,22 @@ export async function POST(req: NextRequest) {
     }
 
     // Si backend configuré, proxy
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    const apiUrl = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL
     if (apiUrl) {
-      const upstream = await fetch(`${apiUrl}/api/onboard/verify-admin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupHandle }),
-        signal: AbortSignal.timeout(8000),
-      })
-      if (upstream.ok) {
-        const data = await upstream.json()
-        return NextResponse.json(data)
+      try {
+        const upstream = await fetch(`${apiUrl}/api/onboard/verify-admin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groupHandle }),
+          signal: AbortSignal.timeout(8000),
+        })
+        if (upstream.ok) {
+          const data = await upstream.json()
+          return NextResponse.json(data)
+        }
+        console.error('[onboard/verify-admin] upstream error', upstream.status)
+      } catch (upstreamErr) {
+        console.error('[onboard/verify-admin] upstream unreachable', upstreamErr)
       }
     }
 
@@ -37,6 +42,7 @@ export async function POST(req: NextRequest) {
     const displayRef = isLink ? groupHandle : `@${groupHandle}`
 
     return NextResponse.json({
+      verified:    false,
       status:      'instructions_sent',
       groupHandle: displayRef,
       addBotUrl:   `https://t.me/Copilo_TaxiBot?start=admin_${groupHandle.slice(0, 40)}`,

@@ -24,17 +24,22 @@ export async function POST(req: NextRequest) {
     }
 
     // Si backend configuré, proxy
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    const apiUrl = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL
     if (apiUrl) {
-      const upstream = await fetch(`${apiUrl}/api/onboard/create-group`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupName, type: groupType, description }),
-        signal: AbortSignal.timeout(8000),
-      })
-      if (upstream.ok) {
-        const data = await upstream.json()
-        return NextResponse.json(data)
+      try {
+        const upstream = await fetch(`${apiUrl}/api/onboard/create-group`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groupName, type: groupType, description }),
+          signal: AbortSignal.timeout(8000),
+        })
+        if (upstream.ok) {
+          const data = await upstream.json()
+          return NextResponse.json(data)
+        }
+        console.error('[onboard/create-group] upstream error', upstream.status)
+      } catch (upstreamErr) {
+        console.error('[onboard/create-group] upstream unreachable', upstreamErr)
       }
     }
 
