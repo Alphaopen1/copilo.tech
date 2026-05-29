@@ -6,10 +6,12 @@ const T = {
   en: { links: [['#features','Features'],['#demo','Demo'],['#how','How'],['#telegram','Telegram'],['#waitlist','Access'],['/onboard','Create my Copilo']], cta: 'Get Started' },
 }
 
-export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l: 'fr' | 'en') => void }) {
+export default function Nav({ lang, setLang, linkPrefix = '' }: { lang: 'fr' | 'en'; setLang: (l: 'fr' | 'en') => void; linkPrefix?: string }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const tr = T[lang]
+  /* On sub-pages (e.g. /onboard) prefix hash links so they resolve to the homepage section */
+  const resolve = (h: string) => (h.startsWith('#') ? linkPrefix + h : h)
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
@@ -51,7 +53,7 @@ export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l:
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-8">
         {tr.links.map(([href, label]) => (
-          <a key={href} href={href} style={{
+          <a key={href} href={resolve(href)} style={{
             fontSize: 13, fontWeight: 500, letterSpacing: '0.06em',
             color: 'rgba(180,200,255,0.55)', textDecoration: 'none',
             transition: 'color 0.2s', textTransform: 'uppercase',
@@ -84,7 +86,7 @@ export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l:
           ))}
         </div>
 
-        <a href="#waitlist" className="hidden md:block btn-primary px-5 py-2 rounded-xl text-white"
+        <a href={resolve('#waitlist')} className="hidden md:block btn-primary px-5 py-2 rounded-xl text-white"
            style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 15, letterSpacing: '0.05em', textDecoration: 'none', textTransform: 'uppercase' }}>
           {tr.cta}
         </a>
@@ -106,7 +108,7 @@ export default function Nav({ lang, setLang }: { lang: 'fr' | 'en'; setLang: (l:
           style={{ background: 'rgba(4,8,15,0.97)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         >
           {tr.links.map(([href, label]) => (
-            <a key={href} href={href} onClick={() => setOpen(false)}
+            <a key={href} href={resolve(href)} onClick={() => setOpen(false)}
                style={{ color: 'rgba(180,200,255,0.7)', fontSize: 16, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none' }}>
               {label}
             </a>

@@ -445,8 +445,8 @@ export default function Hero({ lang }: { lang: Lang }) {
                 {tr.h1b}
               </span>
             </h1>
-            <p style={{ fontSize:15, color:'rgba(180,200,255,0.55)', lineHeight:1.75,
-              fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32, color:'rgba(180,200,255,0.78)' }}>{tr.sub}</p>
+            <p style={{ fontSize:15, color:'rgba(180,200,255,0.78)', lineHeight:1.75,
+              fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32 }}>{tr.sub}</p>
             <div style={{ display:'flex', gap:28, marginBottom:40, flexWrap:'wrap' }}>
               {tr.metrics.map(m => (
                 <div key={m.label}>

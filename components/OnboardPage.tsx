@@ -1,6 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Nav from '@/components/Nav'
+import VideoBanner from '@/components/VideoBanner'
+import Footer from '@/components/Footer'
 
 /* ── SVG icons ──────────────────────────────────────────────────────── */
 function BotIcon({ color = '#60a5fa', size = 28 }: { color?: string; size?: number }) {
@@ -160,6 +163,7 @@ export default function OnboardPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
+  const [lang, setLang] = useState<'fr' | 'en'>('fr')
   const [selected, setSelected] = useState<CardId | null>(null)
   const [fromUrl, setFromUrl] = useState(false)
 
@@ -286,7 +290,14 @@ export default function OnboardPage() {
      RENDER
   ═══════════════════════════════════════════════════════════════════ */
   return (
-    <main style={{ minHeight:'100vh', background:'#04080f', padding:'80px clamp(16px,5vw,60px) 120px', position:'relative', overflow:'hidden' }}>
+    <>
+      {/* Fixed stars background (FacilPay-style deep-space atmosphere) */}
+      <div className="stars-bg" />
+
+      {/* Menu (was missing on /onboard) — hash links resolve back to the homepage */}
+      <Nav lang={lang} setLang={setLang} linkPrefix="/" />
+
+      <main style={{ minHeight:'100vh', background:'transparent', padding:'104px clamp(16px,5vw,60px) 120px', position:'relative', overflow:'hidden', zIndex:1 }}>
 
       {/* Atmospheric glow */}
       <div style={{ position:'absolute', top:'-10%', left:'50%', transform:'translateX(-50%)', width:900, height:500, background:'radial-gradient(ellipse 60% 55% at 50% 0%, rgba(29,92,255,0.35) 0%, rgba(0,207,255,0.08) 40%, transparent 70%)', pointerEvents:'none' }} />
@@ -542,6 +553,24 @@ export default function OnboardPage() {
       {/* Spin keyframe for SpinnerIcon */}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </main>
+
+      {/* ── Vidéo de présentation (was missing on /onboard) ── */}
+      <div style={{ position:'relative', zIndex:1 }}>
+        <div style={{ maxWidth:960, margin:'0 auto', padding:'0 clamp(16px,5vw,60px) 28px', textAlign:'center' }}>
+          <div style={{ fontFamily:"'DM Mono', monospace", fontSize:11, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:14 }}>
+            // {lang === 'fr' ? 'EN 33 SECONDES' : 'IN 33 SECONDS'}
+          </div>
+          <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:'clamp(30px,4.5vw,48px)', lineHeight:1, letterSpacing:'-0.01em', textTransform:'uppercase', color:'#f0f4ff', margin:0 }}>
+            {lang === 'fr' ? 'Vois Copilo en action.' : 'See Copilo in action.'}
+          </h2>
+        </div>
+        <VideoBanner />
+      </div>
+
+      <div style={{ position:'relative', zIndex:1 }}>
+        <Footer lang={lang} />
+      </div>
+    </>
   )
 }
 
