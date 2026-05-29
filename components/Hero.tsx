@@ -158,8 +158,16 @@ function PhoneScreen({
   scenarios, activeIdx, setActiveIdx, visibleN, typing, showCta,
   fadeOut, progKey, scenarioDuration, chatRef, online, ctaInChat, large,
 }: PhoneScreenProps) {
-  const s  = large ? 1.7 : 1        // scale factor for text/avatar sizes (large = readable once revealed)
-  const fs = (n: number) => n * s    // font scale helper
+  // Police responsive : sur mobile le téléphone est moins rétréci (kEnd 0.84)
+  // → on baisse `s` pour éviter une police trop grosse à l'écran.
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 640)
+    fn(); window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
+  }, [])
+  const s  = large ? (isMobile ? 1.3 : 1.7) : 1   // scale factor for text/avatar sizes
+  const fs = (n: number) => n * s                  // font scale helper
   const current = scenarios[activeIdx]
 
   return (
