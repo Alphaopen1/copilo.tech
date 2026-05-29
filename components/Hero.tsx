@@ -328,22 +328,6 @@ function PhoneScreen({
         ))}
       </div>
 
-      {/* Bottom bar — CTA Telegram permanent */}
-      <div style={{ padding:`${large?9:7}px 10px ${large?11:9}px`,
-        borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
-        <a
-          href="https://t.me/Copilo_TaxiBot"
-          target="_blank" rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:fs(7),
-            padding:`${large?11:9}px ${large?18:14}px`, borderRadius:fs(22),
-            background:'linear-gradient(135deg,#1d5cff,#00cfff)', boxShadow:'0 0 20px rgba(29,92,255,0.45)',
-            color:'#fff', textDecoration:'none', fontFamily:"'Barlow Condensed',sans-serif",
-            fontWeight:700, fontSize:fs(12.5), letterSpacing:'0.06em', textTransform:'uppercase',
-            animation:'phoneCtaPulse 2s ease-in-out infinite' }}>
-          <TgIcon /> {ctaInChat}
-        </a>
-      </div>
     </div>
   )
 }
@@ -427,6 +411,7 @@ export default function Hero({ lang }: { lang: Lang }) {
   const glowRef      = useRef<HTMLDivElement>(null)
   const phoneZoomRef = useRef<HTMLDivElement>(null)
   const hintRef      = useRef<HTMLDivElement>(null)
+  const ctaRef       = useRef<HTMLAnchorElement>(null)
   const [zoomEnabled, setZoomEnabled] = useState(false)
 
   /* Enable the effect only when motion is allowed (avoids SSR/hydration issues) */
@@ -453,17 +438,23 @@ export default function Hero({ lang }: { lang: Lang }) {
       // révélé (texte lisible) ; sur desktop il rétrécit un peu plus.
       const kEnd = window.innerWidth < 640 ? 0.84 : 0.66
       const k  = 1.0 - p * (1.0 - kEnd)  // 1.0 (haut géant) → kEnd (tél entier visible)
-      const ty = 50 - p * 47             // vh : top à 50vh (moitié basse) → 3vh (centré)
+      // Anti-chevauchement : le titre s'efface D'ABORD (p < 0.34), PUIS le
+      // téléphone remonte et se révèle (p 0.34 → 1). Transition fluide, le
+      // texte et l'iPhone ne se croisent jamais.
+      const reveal = Math.max(0, (p - 0.34) / 0.66)
+      const ty = 56 - reveal * 53        // vh : 56vh (sous le titre) → 3vh (centré)
       if (phoneZoomRef.current) {
         phoneZoomRef.current.style.top = `${ty}vh`
         phoneZoomRef.current.style.transform = `translateX(-50%) translateZ(0) scale(${k})`
       }
       if (copyRef.current) {
-        copyRef.current.style.opacity   = String(Math.max(0, 1 - p * 2.0))
-        copyRef.current.style.transform = `translateY(${-p * 40}px)`
+        copyRef.current.style.opacity   = String(Math.max(0, 1 - p * 3.6))
+        copyRef.current.style.transform = `translateY(${-p * 80}px)`
       }
       if (glowRef.current) glowRef.current.style.opacity = String(0.95 - p * 0.2)
       if (hintRef.current) hintRef.current.style.opacity = String(Math.max(0, 1 - p * 4))
+      // Le CTA apparaît à mesure que le téléphone se révèle (à la fin de l'iPhone)
+      if (ctaRef.current) ctaRef.current.style.opacity = String(Math.min(1, Math.max(0, (p - 0.3) * 3)))
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
     update()
@@ -515,7 +506,7 @@ export default function Hero({ lang }: { lang: Lang }) {
           </div>
           <h1 style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, lineHeight:0.92,
             letterSpacing:'-0.01em', textTransform:'uppercase',
-            fontSize:'clamp(40px,7.5vw,86px)', margin:'0 auto 16px', maxWidth:820, color:'#f0f4ff' }}>
+            fontSize:'clamp(36px,6.6vw,74px)', margin:'0 auto 14px', maxWidth:760, color:'#f0f4ff' }}>
             {tr.h1a}{' '}
             <span style={{ background:'linear-gradient(120deg,#fff 0%,#60a5fa 55%,#00cfff 100%)',
               WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
@@ -541,7 +532,7 @@ export default function Hero({ lang }: { lang: Lang }) {
           ref={phoneZoomRef}
           onClick={() => setZoomed(true)}
           title={tr.expand}
-          style={{ position:'absolute', left:'50%', top: zoomEnabled ? '50vh' : '6vh', zIndex:1,
+          style={{ position:'absolute', left:'50%', top: zoomEnabled ? '56vh' : '6vh', zIndex:1,
             width:'min(520px, 78vw)', aspectRatio:'310 / 660', height:'auto', cursor:'pointer',
             transformOrigin:'top center', willChange:'transform, top', backfaceVisibility:'hidden',
             transform: zoomEnabled ? 'translateX(-50%) translateZ(0) scale(1)' : 'translateX(-50%) scale(0.66)' }}
@@ -576,8 +567,26 @@ export default function Hero({ lang }: { lang: Lang }) {
           <PhoneScreen {...phoneProps} chatRef={smallChatRef} large />
         </div>
 
+        {/* CTA Telegram — hors du téléphone, apparaît à la fin de l'iPhone (au scroll) */}
+        <a
+          ref={ctaRef}
+          href="https://t.me/Copilo_TaxiBot"
+          target="_blank" rel="noopener noreferrer"
+          style={{ position:'absolute', bottom:'clamp(20px,4.5vh,40px)', left:'50%', transform:'translateX(-50%)',
+            opacity: zoomEnabled ? 0 : 1, transition:'opacity 0.2s linear',
+            zIndex:3, display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'clamp(9px,2vw,13px)',
+            padding:'clamp(15px,2.2vh,19px) clamp(24px,5vw,40px)', borderRadius:999, whiteSpace:'nowrap', maxWidth:'92vw',
+            background:'linear-gradient(135deg,#1d5cff,#00cfff)',
+            boxShadow:'0 0 30px rgba(29,92,255,0.6), 0 14px 34px rgba(0,0,0,0.45)',
+            color:'#fff', textDecoration:'none',
+            fontFamily:"'Barlow Condensed',sans-serif",
+            fontWeight:800, fontSize:'clamp(16px,4.4vw,22px)', letterSpacing:'0.06em', textTransform:'uppercase',
+            animation:'phoneCtaPulse 2s ease-in-out infinite' }}>
+          <TgIcon size={44} /> {tr.ctaInChat}
+        </a>
+
         {/* Scroll hint (fades as you zoom in) */}
-        <div ref={hintRef} style={{ position:'absolute', bottom:'clamp(16px,4vh,34px)', left:0, right:0,
+        <div ref={hintRef} style={{ position:'absolute', bottom:'clamp(80px,11vh,110px)', left:0, right:0,
           textAlign:'center', zIndex:2, transition:'opacity 0.15s linear', pointerEvents:'none' }}>
           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'rgba(180,200,255,0.45)',
             letterSpacing:'0.14em' }}>
@@ -737,9 +746,9 @@ function MicIcon() {
     </svg>
   )
 }
-function TgIcon() {
+function TgIcon({ size = 24 }: { size?: number } = {}) {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
       <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
     </svg>
   )
