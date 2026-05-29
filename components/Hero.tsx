@@ -1,461 +1,700 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 
-/* ── Types ──────────────────────────────────────────────────────────── */
-type Role  = 'user' | 'bot'
-type Phase = 'idle' | 'listening' | 'thinking' | 'chat' | 'form' | 'success'
-interface Msg { id: number; role: Role; text: string }
+/* ─── Types ─────────────────────────────────────────────────────────── */
+type Lang    = 'fr' | 'en'
+type MsgRole = 'u' | 'c'
+interface ScenarioMsg { role: MsgRole; text: string; delay: number }
+interface Scenario    { id: string; label: string; icon: string; messages: ScenarioMsg[] }
 
-/* ── Translations ───────────────────────────────────────────────────── */
+/* ─── Scenario data ──────────────────────────────────────────────────── */
+const SCENARIOS: Record<Lang, Scenario[]> = {
+  fr: [
+    {
+      id: 'course', label: 'Course', icon: '🚗',
+      messages: [
+        { role: 'u', text: 'Course demain 14h30 Nice → CHU Pasteur, M. Bernard', delay: 0 },
+        { role: 'c', text: 'Voici la course :\n• 28/05 à 14:30 — M. Bernard\n• Nice → CHU Pasteur · 22 min\n• CA CPAM 18,40 €\n\nConfirmer ?', delay: 1800 },
+        { role: 'u', text: 'Oui confirmer', delay: 3400 },
+        { role: 'c', text: 'Course #87 créée ✓\nGoogle Calendar mis à jour\nRappel dans 13h30', delay: 5200 },
+      ],
+    },
+    {
+      id: 'brief', label: 'Brief', icon: '☀️',
+      messages: [
+        { role: 'c', text: 'Bonjour ! Brief du 28/05 :\n\n• 3 courses planifiées\n• 09:00 Mme Dupont → Cannes\n• 11:30 M. Karim → Aéroport NCE\n• 15:00 Mme Leroy → Clinique\n\nCA estimé : 142,80 €\nPéages : 8,40 €', delay: 0 },
+        { role: 'u', text: "C'est noté, merci Copilo", delay: 2200 },
+        { role: 'c', text: 'Bonne route ! Je te préviens 15 min avant chaque course.', delay: 3800 },
+      ],
+    },
+    {
+      id: 'doublet', label: 'Doublet', icon: '👥',
+      messages: [
+        { role: 'u', text: 'Course 9h Nice → Cannes, M. Hajj', delay: 0 },
+        { role: 'c', text: 'Doublet possible !\n\nMme Dupont part aussi Nice → Cannes demain 09:00.\n\nFusionner ? 1 péage · CA × 2 patients', delay: 2000 },
+        { role: 'u', text: 'Oui, fusionner', delay: 3800 },
+        { role: 'c', text: 'Doublet #88 créé ✓\n• Mme Dupont + M. Hajj\n• 46,20 € × 2 patients\nCalendrier en orange', delay: 5600 },
+      ],
+    },
+    {
+      id: 'peage', label: 'Péage', icon: '🛣️',
+      messages: [
+        { role: 'u', text: 'Péage A8 ce matin, 4,80 €', delay: 0 },
+        { role: 'c', text: 'Péage mémorisé ✓\n• A8 · 4,80 € · 28/05 09:14\n\nIl sera auto-associé aux courses Nice → Cannes.', delay: 1800 },
+        { role: 'u', text: 'Parfait merci', delay: 3200 },
+        { role: 'c', text: "Dans 2 semaines, je m'en souviendrai automatiquement.", delay: 4600 },
+      ],
+    },
+  ],
+  en: [
+    {
+      id: 'course', label: 'Ride', icon: '🚗',
+      messages: [
+        { role: 'u', text: 'Ride tomorrow 2:30pm Nice → Pasteur Hospital, Mr Bernard', delay: 0 },
+        { role: 'c', text: 'Ride details:\n• May 28 at 14:30 — Mr Bernard\n• Nice → Pasteur · 22 min\n• Revenue €18.40\n\nConfirm?', delay: 1800 },
+        { role: 'u', text: 'Yes confirm', delay: 3400 },
+        { role: 'c', text: 'Ride #87 created ✓\nGoogle Calendar updated\nReminder in 13h30', delay: 5200 },
+      ],
+    },
+    {
+      id: 'brief', label: 'Brief', icon: '☀️',
+      messages: [
+        { role: 'c', text: 'Good morning! Brief May 28:\n\n• 3 rides scheduled\n• 09:00 Ms Dupont → Cannes\n• 11:30 Mr Karim → NCE Airport\n• 15:00 Ms Leroy → Clinic\n\nEst. revenue: €142.80\nTolls: €8.40', delay: 0 },
+        { role: 'u', text: 'Got it, thanks Copilo', delay: 2200 },
+        { role: 'c', text: "Safe drive! I'll alert you 15 min before each ride.", delay: 3800 },
+      ],
+    },
+    {
+      id: 'doublet', label: 'Shared', icon: '👥',
+      messages: [
+        { role: 'u', text: 'Ride 9am Nice → Cannes, Mr Hajj', delay: 0 },
+        { role: 'c', text: 'Shared ride detected!\n\nMs Dupont also goes Nice → Cannes tomorrow 09:00.\n\nMerge? 1 toll · revenue × 2 patients', delay: 2000 },
+        { role: 'u', text: 'Yes merge', delay: 3800 },
+        { role: 'c', text: 'Shared #88 created ✓\n• Ms Dupont + Mr Hajj\n• €46.20 × 2 patients\nCalendar in orange', delay: 5600 },
+      ],
+    },
+    {
+      id: 'peage', label: 'Toll', icon: '🛣️',
+      messages: [
+        { role: 'u', text: 'A8 toll this morning, €4.80', delay: 0 },
+        { role: 'c', text: 'Toll saved ✓\n• A8 · €4.80 · May 28 09:14\n\nAuto-linked to Nice → Cannes rides.', delay: 1800 },
+        { role: 'u', text: 'Perfect thanks', delay: 3200 },
+        { role: 'c', text: "In 2 weeks, I'll remember it automatically.", delay: 4600 },
+      ],
+    },
+  ],
+}
+
 const T = {
   fr: {
     tag: '// VOCAL · TELEGRAM · IA EMBARQUÉE',
     h1a: 'TON IA',
     h1b: 'EMBARQUÉE.',
     sub: 'Push-to-talk. Zéro écoute passive. Courses, CA CPAM, calendrier — tout géré pendant que tu conduis.',
-    demo: 'Essaie la démo live ↓',
-    micHint: 'Appuie et parle',
-    orType: 'ou tape un message…',
-    replies: [
-      "Bonjour, je suis Copilo.\n\nJe crée tes courses, calcule ton CA CPAM, gère les péages et t'alerte sur les doublets — tout en vocal, mains libres.\n\nEssaie un des exemples ci-dessous ↓",
-      "Pour activer la version complète — 3 mois gratuits — j'ai juste besoin de ton prénom et ton numéro.",
-    ],
-    suggestions: [
-      { text: 'Course Mme Dupont 9h, CHU Grenoble', reply: `Course créée !\nDemain 09:00 — Mme Dupont\nArrivée : CHU Grenoble\nCA estimé : 34,20 € CPAM\n\nConfirme ou dis "annule" ?` },
-      { text: 'Mon CA cette semaine ?',              reply: `Semaine du 26 mai\n6 courses · 148 km\nCA CPAM : 214,80 €\nPéages : 18,00 €\n─────────────\nTotal : 232,80 €\n+9 % vs semaine passée` },
-      { text: 'Calcul CA : 38 km depuis Lyon',       reply: `Estimation CA CPAM\nLyon → Dept 69 Rhône\n38,0 km facturables\nTarif : 1,2100 €/km\n─────────────\nTotal estimé : 59,68 €` },
-    ],
-    formTitle: 'Accès prioritaire',
-    formSub:   'Pour continuer avec Copilo sur Telegram',
-    lName:     'Ton prénom',
-    lPhone:    'Ton numéro',
-    lCap:      (a: number, b: number) => `Anti-robot : ${a} + ${b} = ?`,
-    phName:    'Marc',
-    phPhone:   '06 12 34 56 78',
-    phCap:     '…',
-    submit:    'Ouvrir Copilo sur Telegram →',
-    errName:   'Prénom requis (min. 2 car.)',
-    errPhone:  'Format invalide — ex: 06 12 34 56 78',
-    errCap:    'Réponse incorrecte',
-    success:   'Redirection vers Telegram…',
+    demo: '4 scénarios réels, en direct ↓',
     metrics: [
-      { val: '0€',   label: 'pour démarrer' },
-      { val: '< 30s',label: 'setup'          },
-      { val: '100%', label: 'européen'        },
+      { val: '0€',    label: 'pour démarrer' },
+      { val: '< 30s', label: 'setup'          },
+      { val: '100%',  label: 'européen'        },
     ],
+    online: 'EN LIGNE',
+    ctaInChat: 'Essayer sur Telegram →',
+    expand: 'Voir en plein écran',
   },
   en: {
     tag: '// VOICE · TELEGRAM · ON-BOARD AI',
     h1a: 'YOUR ON-BOARD',
     h1b: 'AI COPILOT.',
     sub: 'Push-to-talk. Zero passive listening. Rides, CPAM revenue, calendar — all managed while you drive.',
-    demo: 'Try the live demo ↓',
-    micHint: 'Press and speak',
-    orType: 'or type a message…',
-    replies: [
-      "Hi, I'm Copilo.\n\nI create rides, calculate CPAM revenue, track tolls and alert you on shared trips — all hands-free by voice.\n\nTry one of the examples below ↓",
-      "To unlock the full version — 3 months free — I just need your name and phone.",
-    ],
-    suggestions: [
-      { text: 'Ride Mrs. Dupont 9am, Grenoble Hospital', reply: `Ride created!\nTomorrow 09:00 — Mrs. Dupont\nDest: Grenoble Hospital\nEstimated: €34.20 CPAM\n\nConfirm or say "cancel"?` },
-      { text: 'My revenue this week?',                   reply: `Week of May 26\n6 rides · 148 km\nCPAM revenue: €214.80\nTolls: €18.00\n─────────────\nTotal: €232.80\n+9% vs last week` },
-      { text: 'Calculate: 38 km from Lyon',             reply: `CPAM Revenue Estimate\nLyon → Dept 69 Rhône\n38.0 billable km\nRate: €1.2100/km\n─────────────\nEstimated total: €59.68` },
-    ],
-    formTitle: 'Priority access',
-    formSub:   'To continue with Copilo on Telegram',
-    lName:     'Your first name',
-    lPhone:    'Your phone',
-    lCap:      (a: number, b: number) => `Anti-bot: ${a} + ${b} = ?`,
-    phName:    'Marc',
-    phPhone:   '+33 6 12 34 56 78',
-    phCap:     '…',
-    submit:    'Open Copilo on Telegram →',
-    errName:   'Name required (min 2 chars)',
-    errPhone:  'Invalid format — e.g. +33 6 12 34 56 78',
-    errCap:    'Wrong answer',
-    success:   'Redirecting to Telegram…',
+    demo: '4 real scenarios, live ↓',
     metrics: [
-      { val: '0€',   label: 'to start'   },
-      { val: '< 30s',label: 'setup'       },
-      { val: '100%', label: 'European'    },
+      { val: '0€',    label: 'to start'  },
+      { val: '< 30s', label: 'setup'      },
+      { val: '100%',  label: 'European'   },
     ],
+    online: 'ONLINE',
+    ctaInChat: 'Try on Telegram →',
+    expand: 'View fullscreen',
   },
 }
 
-let _id = 0
+/* ─── PhoneScreen ────────────────────────────────────────────────────── */
+interface PhoneScreenProps {
+  scenarios: Scenario[]
+  activeIdx: number
+  setActiveIdx: (i: number) => void
+  visibleN: number
+  typing: boolean
+  showCta: boolean
+  fadeOut: boolean
+  progKey: number
+  scenarioDuration: number
+  chatRef: React.RefObject<HTMLDivElement | null>
+  online: string
+  ctaInChat: string
+  /** large = zoomed overlay version */
+  large?: boolean
+}
 
-/* ══════════════════════════════════════════════════════════════════════
-   HERO
-══════════════════════════════════════════════════════════════════════ */
-export default function Hero({ lang }: { lang: 'fr' | 'en' }) {
-  const tr = T[lang]
+function PhoneScreen({
+  scenarios, activeIdx, setActiveIdx, visibleN, typing, showCta,
+  fadeOut, progKey, scenarioDuration, chatRef, online, ctaInChat, large,
+}: PhoneScreenProps) {
+  const s  = large ? 1.25 : 1       // scale factor for text/avatar sizes
+  const fs = (n: number) => n * s    // font scale helper
+  const current = scenarios[activeIdx]
 
-  /* ── Chat state ─────────────────────────────────────────────────── */
-  const [msgs,     setMsgs]     = useState<Msg[]>([])
-  const [phase,    setPhase]    = useState<Phase>('idle')
-  const [botCount, setBotCount] = useState(0)
-  const [textIn,   setTextIn]   = useState('')
-  const [typing,   setTyping]   = useState(false)
-
-  /* ── Form state ─────────────────────────────────────────────────── */
-  const [name,       setName]       = useState('')
-  const [phone,      setPhone]      = useState('')
-  const [capA]  = useState(() => Math.floor(Math.random() * 8) + 1)
-  const [capB]  = useState(() => Math.floor(Math.random() * 8) + 1)
-  const [capVal,     setCapVal]     = useState('')
-  const [errs,       setErrs]       = useState<Record<string,string>>({})
-
-  const chatRef  = useRef<HTMLDivElement>(null)
-  const txtRef   = useRef<HTMLInputElement>(null)
-
-  /* Reset on lang change */
-  useEffect(() => {
-    setMsgs([]); setPhase('idle'); setBotCount(0)
-    setTextIn(''); setTyping(false)
-  }, [lang])
-
-  const scrollBottom = () =>
-    setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = 9999 }, 60)
-
-  const push = useCallback((role: Role, text: string) => {
-    setMsgs(p => [...p, { id: ++_id, role, text }])
-    scrollBottom()
-  }, [])
-
-  /* ── Bot respond ───────────────────────────────────────────────── */
-  const botRespond = useCallback(async (specificReply?: string) => {
-    setTyping(true); setPhase('thinking')
-    await new Promise(r => setTimeout(r, 900 + Math.random() * 600))
-    setTyping(false)
-    if (specificReply) {
-      push('bot', specificReply)
-      setBotCount(1)
-      setPhase('chat')
-    } else {
-      const idx = Math.min(botCount, tr.replies.length - 1)
-      push('bot', tr.replies[idx])
-      const next = botCount + 1
-      setBotCount(next)
-      if (next >= 2) { await new Promise(r => setTimeout(r, 400)); setPhase('form') }
-      else setPhase('chat')
-    }
-  }, [botCount, tr.replies, push])
-
-  /* ── Send message ──────────────────────────────────────────────── */
-  const send = useCallback(async (text: string, specificReply?: string) => {
-    if (!text.trim() || phase === 'thinking') return
-    push('user', text.trim())
-    setTextIn('')
-    await botRespond(specificReply)
-  }, [phase, push, botRespond])
-
-  /* ── Voice → ouvre Telegram directement ────────────────────────── */
-  // La démo web est un aperçu visuel. Le vrai vocal push-to-talk est
-  // dans l'app Telegram. Clic mic = ouverture directe de @Copilo_TaxiBot.
-  const toggleVoice = useCallback(() => {
-    window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer')
-  }, [])
-
-  /* ── Form submit ────────────────────────────────────────────────── */
-  const validatePhone = (p: string) => {
-    const c = p.replace(/[\s\-\.]/g, '')
-    return /^(\+33|0033)[67]\d{8}$/.test(c) || /^0[67]\d{8}$/.test(c)
-  }
-
-  const submitForm = (e: React.FormEvent) => {
-    e.preventDefault()
-    const e2: Record<string,string> = {}
-    if (name.trim().length < 2)                     e2.name  = tr.errName
-    if (!validatePhone(phone))                       e2.phone = tr.errPhone
-    if (parseInt(capVal) !== capA + capB)            e2.cap   = tr.errCap
-    if (Object.keys(e2).length) { setErrs(e2); return }
-    setErrs({}); setPhase('success')
-    setTimeout(() => window.open(`https://t.me/Copilo_TaxiBot?start=web_${encodeURIComponent(name.trim())}`, '_blank'), 500)
-  }
-
-  const busy = phase === 'thinking'
-
-  /* ──────────────────────────────────────────────────────────────────
-     RENDER
-  ────────────────────────────────────────────────────────────────── */
   return (
-    <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '80px 0 100px' }}>
+    <div style={{
+      position:'absolute', inset:8, borderRadius: large ? 54 : 46,
+      background:'#040d17', overflow:'hidden',
+      display:'flex', flexDirection:'column',
+      opacity: fadeOut ? 0 : 1, transition:'opacity 0.4s ease',
+    }}>
 
-      {/* Top glow */}
-      <div style={{ position:'absolute', top:'-8%', left:'50%', transform:'translateX(-50%)', width:900, height:500, background:'radial-gradient(ellipse 60% 55% at 50% 0%, rgba(29,92,255,0.42) 0%, rgba(0,207,255,0.1) 40%, transparent 70%)', pointerEvents:'none' }} />
+      {/* ── Progress bar ── */}
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:2, zIndex:10, overflow:'hidden' }}>
+        <div key={progKey} style={{
+          height:'100%', width:'0%',
+          background:'linear-gradient(90deg,#1d5cff,#00cfff)',
+          animation:`phoneProgFill ${scenarioDuration}ms linear forwards`,
+        }} />
+      </div>
 
-      <div style={{ maxWidth:1200, width:'100%', margin:'0 auto', padding:'0 clamp(20px,5vw,60px)', display:'flex', alignItems:'center', gap:'clamp(32px,5vw,72px)', position:'relative', zIndex:1, flexWrap:'wrap' }}>
+      {/* Status bar */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
+        padding:`${large?14:12}px ${large?24:20}px 0`, flexShrink:0 }}>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:fs(10.5), fontWeight:600, color:'rgba(255,255,255,0.85)' }}>9:41</span>
+        <div style={{ display:'flex', alignItems:'center', gap:5 }}><SignalIcon /><WifiIcon /><BatteryIcon /></div>
+      </div>
 
-        {/* ── LEFT: copy ───────────────────────────────────────── */}
-        <div style={{ flex:'1 1 300px', minWidth:260 }}>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.14em', color:'rgba(0,207,255,0.7)', marginBottom:20, textTransform:'uppercase' }}>
-            {tr.tag}
+      {/* Dynamic Island */}
+      <div style={{ width: large?148:122, height: large?38:34, borderRadius:20, background:'#000',
+        margin:'3px auto 6px', flexShrink:0,
+        display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+        boxShadow:'0 0 0 0.5px rgba(255,255,255,0.03)' }}>
+        <div style={{ width:10, height:10, borderRadius:'50%', background:'#0c0c0c',
+          border:'1px solid rgba(255,255,255,0.07)', boxShadow:'0 0 0 2px rgba(29,92,255,0.15) inset' }} />
+        <div style={{
+          width:3, height:3, borderRadius:'50%',
+          background: typing ? '#00cfff' : 'rgba(29,92,255,0.85)',
+          boxShadow: typing ? '0 0 8px #00cfff' : 'none',
+          transition:'background 0.3s, box-shadow 0.3s',
+          animation: typing ? 'phoneDiBlink 0.5s ease-in-out infinite alternate' : 'none',
+        }} />
+      </div>
+
+      {/* Chat header */}
+      <div style={{ display:'flex', alignItems:'center', gap:10,
+        padding:`6px ${large?18:14}px ${large?12:10}px`,
+        borderBottom:'1px solid rgba(255,255,255,0.05)', flexShrink:0 }}>
+        <div style={{ width:fs(36), height:fs(36), borderRadius:11, flexShrink:0,
+          background:'linear-gradient(135deg,#1d5cff 0%,#00cfff 100%)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontFamily:"'Barlow Condensed',sans-serif", fontWeight:900, fontSize:fs(18), color:'#fff',
+          boxShadow:'0 0 16px rgba(29,92,255,0.5)' }}>C</div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontFamily:"'Barlow',sans-serif", fontWeight:700, fontSize:fs(13), color:'#f0f4ff' }}>
+            @Copilo_TaxiBot
           </div>
-
-          <h1 style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, lineHeight:0.92, letterSpacing:'-0.01em', textTransform:'uppercase', fontSize:'clamp(46px,6vw,80px)', marginBottom:20, color:'#f0f4ff' }}>
-            {tr.h1a}<br />
-            <span style={{ background:'linear-gradient(120deg,#fff 0%,#60a5fa 55%,#00cfff 100%)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
-              {tr.h1b}
-            </span>
-          </h1>
-
-          <p style={{ fontSize:15, color:'rgba(180,200,255,0.55)', lineHeight:1.75, fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32 }}>
-            {tr.sub}
-          </p>
-
-          <div style={{ display:'flex', gap:28, marginBottom:40, flexWrap:'wrap' }}>
-            {tr.metrics.map(m => (
-              <div key={m.label}>
-                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, fontSize:26, color:'#00cfff', textTransform:'uppercase' }}>{m.val}</div>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:2 }}>{m.label}</div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'rgba(29,92,255,0.75)', letterSpacing:'0.1em', textTransform:'uppercase' }}>
-            {tr.demo}
+          <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:1 }}>
+            <div style={{ width:5, height:5, borderRadius:'50%', background:'#22c55e', boxShadow:'0 0 5px #22c55e' }} />
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:fs(9), color:'rgba(0,207,255,0.65)', letterSpacing:'0.06em' }}>{online}</span>
           </div>
         </div>
+        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:fs(8.5), letterSpacing:'0.07em',
+          color:'rgba(0,207,255,0.6)', textTransform:'uppercase',
+          padding:'2px 7px', borderRadius:6,
+          background:'rgba(0,207,255,0.07)', border:'1px solid rgba(0,207,255,0.14)',
+          transition:'all 0.3s', whiteSpace:'nowrap' }}>
+          {current.icon} {current.label}
+        </div>
+      </div>
 
-        {/* ── RIGHT: iPhone 17 Pro Max + video ───────────────── */}
-        <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center' }}>
+      {/* Messages */}
+      <div ref={chatRef} style={{ flex:1, overflowY:'auto', padding:`10px ${large?16:12}px 12px`,
+        display:'flex', flexDirection:'column', gap: large ? 10 : 8, scrollbarWidth:'none' }}>
 
-          {/* Ambient glow behind phone */}
-          <div style={{ position:'absolute', top:-30, left:-30, right:-30, height:700, background:'radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,92,255,0.18) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
+        {current.messages.slice(0, visibleN).map((m, i) => (
+          <div key={`${activeIdx}-${i}`}
+            style={{ display:'flex', justifyContent:m.role==='u'?'flex-end':'flex-start',
+              alignItems:'flex-end', gap:5, animation:'msgIn 0.26s ease forwards' }}>
 
-          {/* ── iPhone 17 Pro Max shell ── */}
-          <div style={{ position:'relative', width:310, height:660, flexShrink:0 }}>
+            {m.role === 'c' && (
+              <div style={{ width:fs(22), height:fs(22), borderRadius:7, flexShrink:0,
+                background:'linear-gradient(135deg,#1d5cff 0%,#00cfff 100%)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontFamily:"'Barlow Condensed',sans-serif", fontWeight:900, fontSize:fs(11), color:'#fff' }}>C</div>
+            )}
 
-            {/* Black Titanium frame */}
             <div style={{
-              position:'absolute', inset:0, borderRadius:52,
-              background:'linear-gradient(160deg, #2f2f2f 0%, #1a1a1a 30%, #3c3c3c 50%, #1c1c1c 70%, #2d2d2d 100%)',
-              boxShadow:'0 0 0 0.5px rgba(255,255,255,0.09) inset, 0 0 0 1px rgba(0,0,0,0.8), 0 48px 90px rgba(0,0,0,0.65), 0 0 40px rgba(29,92,255,0.12)',
+              maxWidth:'80%', padding:`${large?9:7}px ${large?13:11}px`,
+              borderRadius: m.role==='u' ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
+              background: m.role==='u' ? 'linear-gradient(135deg,#1d5cff,#1040c0)' : 'rgba(255,255,255,0.06)',
+              border: m.role==='c' ? '1px solid rgba(255,255,255,0.07)' : 'none',
+              color:'#f0f4ff', fontSize:fs(11), lineHeight:1.65,
+              fontFamily:"'Barlow',sans-serif",
+              boxShadow: m.role==='u' ? '0 2px 12px rgba(29,92,255,0.3)' : 'none',
+              whiteSpace:'pre-wrap',
             }}>
-              {/* Side buttons */}
-              {[{s:'left',  t:100, h:18, label:'action'},
-                {s:'left',  t:134, h:34, label:'vol+'},
-                {s:'left',  t:178, h:34, label:'vol-'},
-                {s:'right', t:152, h:52, label:'power'},
-              ].map(b => (
-                <div key={b.label} style={{
-                  position:'absolute',
-                  [b.s === 'left' ? 'left' : 'right']: -3,
-                  top: b.t, width:3, height: b.h,
-                  borderRadius: b.s === 'left' ? '2px 0 0 2px' : '0 2px 2px 0',
-                  background:'#2e2e2e',
-                  boxShadow: b.s === 'left' ? '-1px 0 2px rgba(255,255,255,0.04)' : '1px 0 2px rgba(255,255,255,0.04)',
-                }} />
+              {m.text}
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:fs(7.5),
+                color:'rgba(255,255,255,0.22)', marginTop:3,
+                textAlign: m.role==='u' ? 'right' : 'left' }}>
+                09:{String(41 + i).padStart(2, '0')}
+              </div>
+            </div>
+
+            {m.role === 'u' && (
+              <svg width="14" height="9" viewBox="0 0 18 10" style={{ flexShrink:0, marginBottom:8 }} fill="none">
+                <path d="M1 5l3.5 3.5L10 1"  stroke="#00cfff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7 5l3.5 3.5L16 1" stroke="#00cfff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
+        ))}
+
+        {typing && (
+          <div style={{ display:'flex', justifyContent:'flex-start', alignItems:'flex-end', gap:5, animation:'msgIn 0.26s ease forwards' }}>
+            <div style={{ width:fs(22), height:fs(22), borderRadius:7, flexShrink:0,
+              background:'linear-gradient(135deg,#1d5cff 0%,#00cfff 100%)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontFamily:"'Barlow Condensed',sans-serif", fontWeight:900, fontSize:fs(11), color:'#fff' }}>C</div>
+            <div style={{ padding:'9px 12px', borderRadius:'4px 14px 14px 14px',
+              background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.07)',
+              display:'flex', gap:4, alignItems:'center' }}>
+              {[0, 0.2, 0.4].map((d, i) => (
+                <span key={i} style={{ width:5, height:5, borderRadius:'50%',
+                  background:'rgba(29,92,255,0.8)', display:'inline-block',
+                  animation:`blink 1.2s ${d}s ease-in-out infinite` }} />
               ))}
             </div>
-
-            {/* Screen area */}
-            <div style={{ position:'absolute', inset:8, borderRadius:46, background:'#040d17', overflow:'hidden', display:'flex', flexDirection:'column' }}>
-
-              {/* Status bar */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 20px 0', flexShrink:0 }}>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10.5, fontWeight:600, color:'rgba(255,255,255,0.85)' }}>9:41</span>
-                <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                  <SignalIcon /><WifiIcon /><BatteryIcon />
-                </div>
-              </div>
-
-              {/* Dynamic Island */}
-              <div style={{ width:122, height:34, borderRadius:20, background:'#000', margin:'3px auto 6px', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', gap:10, boxShadow:'0 0 0 0.5px rgba(255,255,255,0.03)' }}>
-                <div style={{ width:10, height:10, borderRadius:'50%', background:'#0c0c0c', border:'1px solid rgba(255,255,255,0.07)', boxShadow:'0 0 0 2px rgba(29,92,255,0.15) inset' }} />
-                <div style={{ width:3, height:3, borderRadius:'50%', background:'rgba(29,92,255,0.85)' }} />
-              </div>
-
-              {/* Chat header */}
-              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 14px 10px', borderBottom:'1px solid rgba(255,255,255,0.05)', flexShrink:0 }}>
-                <div style={{ width:36, height:36, borderRadius:11, flexShrink:0, background:'linear-gradient(135deg,#1d5cff 0%,#00cfff 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Barlow Condensed',sans-serif", fontWeight:900, fontSize:18, color:'#fff', boxShadow:'0 0 16px rgba(29,92,255,0.5)' }}>C</div>
-                <div>
-                  <div style={{ fontFamily:"'Barlow',sans-serif", fontWeight:700, fontSize:13, color:'#f0f4ff' }}>Copilo</div>
-                  <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:1 }}>
-                    <div style={{ width:5, height:5, borderRadius:'50%', background:'#22c55e', boxShadow:'0 0 5px #22c55e' }} />
-                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(0,207,255,0.65)', letterSpacing:'0.06em' }}>EN LIGNE</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Screen content ── */}
-              {phase !== 'form' && phase !== 'success' ? (
-
-                /* CHAT */
-                <div style={{ flex:1, position:'relative', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-                  <div ref={chatRef} style={{ flex:1, overflowY:'auto', padding:'10px 12px 12px', display:'flex', flexDirection:'column', gap:7, scrollbarWidth:'none' }}>
-
-                    {/* Idle: suggestions */}
-                    {msgs.length === 0 && phase === 'idle' && (
-                      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:14, padding:'0 8px 60px' }}>
-                        <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(29,92,255,0.12)', border:'1px solid rgba(29,92,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(29,92,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                            <line x1="12" x2="12" y1="19" y2="22"/>
-                          </svg>
-                        </div>
-                        <div style={{ fontFamily:"'Barlow',sans-serif", fontSize:12, color:'rgba(180,200,255,0.45)', textAlign:'center', lineHeight:1.6 }}>
-                          {tr.micHint}
-                        </div>
-                        <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:5 }}>
-                          {tr.suggestions.map(s => (
-                            <button key={s.text} onClick={() => send(s.text, s.reply)} style={{ padding:'7px 10px', borderRadius:10, textAlign:'left', background:'rgba(29,92,255,0.07)', border:'1px solid rgba(29,92,255,0.18)', color:'rgba(180,200,255,0.65)', fontFamily:"'Barlow',sans-serif", fontSize:10.5, cursor:'pointer' }}
-                              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(29,92,255,0.16)')}
-                              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(29,92,255,0.07)')}>
-                              {s.text}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Messages */}
-                    {msgs.map(m => (
-                      <div key={m.id} style={{ display:'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', animation:'msgIn 0.28s ease forwards' }}>
-                        <div style={{ maxWidth:'87%', padding:'8px 12px', borderRadius: m.role === 'user' ? '14px 4px 14px 14px' : '4px 14px 14px 14px', background: m.role === 'user' ? 'linear-gradient(135deg,#1d5cff,#1040c0)' : 'rgba(255,255,255,0.06)', border: m.role === 'bot' ? '1px solid rgba(255,255,255,0.06)' : 'none', color:'#f0f4ff', fontSize:11.5, lineHeight:1.6, fontFamily:"'Barlow',sans-serif", boxShadow: m.role === 'user' ? '0 2px 14px rgba(29,92,255,0.25)' : 'none', whiteSpace:'pre-wrap' }}>
-                          {m.text}
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Typing dots */}
-                    {typing && (
-                      <div style={{ display:'flex', justifyContent:'flex-start' }}>
-                        <div style={{ padding:'10px 14px', borderRadius:'4px 14px 14px 14px', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.06)', display:'flex', gap:4, alignItems:'center' }}>
-                          {[0, 0.2, 0.4].map((d,i) => <span key={i} style={{ width:5, height:5, borderRadius:'50%', background:'rgba(29,92,255,0.8)', display:'inline-block', animation:`blink 1.2s ${d}s ease-in-out infinite` }} />)}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Bottom input bar with mic button */}
-                  <div style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 10px', borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
-                    {/* Mic button — ouvre Telegram directement, pas de SpeechRecognition */}
-                    <button
-                      onClick={toggleVoice}
-                      title={lang === 'fr' ? 'Parler à Copilo sur Telegram' : 'Talk to Copilo on Telegram'}
-                      style={{
-                        width:32, height:32, borderRadius:'50%', border:'none', flexShrink:0,
-                        background:'linear-gradient(135deg,#1d5cff,#00cfff)',
-                        boxShadow:'0 0 14px rgba(29,92,255,0.45)',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                        cursor:'pointer',
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" x2="12" y1="19" y2="22"/>
-                      </svg>
-                    </button>
-                    <input ref={txtRef} type="text" value={textIn} onChange={e => setTextIn(e.target.value)} onKeyDown={e => e.key === 'Enter' && send(textIn)} placeholder={tr.orType} disabled={busy}
-                      style={{ flex:1, height:32, borderRadius:16, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', padding:'0 11px', color:'#f0f4ff', fontFamily:"'Barlow',sans-serif", fontSize:10.5, outline:'none' }} />
-                    {textIn.trim() && (
-                      <button onClick={() => send(textIn)} style={{ width:30, height:30, borderRadius:'50%', border:'none', background:'#1d5cff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 }}>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-              ) : phase === 'form' ? (
-
-                /* FORM */
-                <form onSubmit={submitForm} style={{ flex:1, overflowY:'auto', padding:'14px', display:'flex', flexDirection:'column', gap:10, scrollbarWidth:'none', animation:'fadeUp 0.4s ease forwards' }}>
-                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:17, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.03em' }}>{tr.formTitle}</div>
-                  <div style={{ fontFamily:"'Barlow',sans-serif", fontSize:11, color:'rgba(180,200,255,0.5)', marginBottom:2 }}>{tr.formSub}</div>
-
-                  {/* Name */}
-                  <FormField label={tr.lName} error={errs.name}>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={tr.phName}
-                      style={fieldStyle(!!errs.name)} />
-                  </FormField>
-
-                  {/* Phone */}
-                  <FormField label={tr.lPhone} error={errs.phone}>
-                    <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={tr.phPhone}
-                      style={fieldStyle(!!errs.phone)} />
-                  </FormField>
-
-                  {/* CAPTCHA */}
-                  <FormField label={tr.lCap(capA, capB)} error={errs.cap}>
-                    <input type="number" value={capVal} onChange={e => setCapVal(e.target.value)} placeholder={tr.phCap}
-                      style={{ ...fieldStyle(!!errs.cap), fontFamily:"'DM Mono',monospace" }} />
-                  </FormField>
-
-                  {/* Submit */}
-                  <button type="submit" style={{ width:'100%', padding:'10px 14px', borderRadius:12, border:'none', background:'#1d5cff', boxShadow:'0 0 0 1px rgba(29,92,255,0.4), 0 0 22px rgba(29,92,255,0.28)', color:'#fff', fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:14, letterSpacing:'0.05em', textTransform:'uppercase', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                    <TgIcon /> {tr.submit}
-                  </button>
-
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.3)', textAlign:'center', letterSpacing:'0.06em', display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(180,200,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Aucune CB · RGPD · Données chiffrées
-                  </div>
-                </form>
-
-              ) : (
-
-                /* SUCCESS */
-                <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, animation:'fadeUp 0.4s ease forwards' }}>
-                  <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  </div>
-                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:16, color:'#f0f4ff', textTransform:'uppercase', textAlign:'center' }}>{tr.success}</div>
-                </div>
-
-              )}
-            </div>
-
           </div>
+        )}
 
+        {showCta && !typing && (
+          <div style={{ display:'flex', justifyContent:'center', marginTop:8, animation:'msgIn 0.4s ease forwards' }}>
+            <a href="/onboard?type=bot" style={{
+              display:'inline-flex', alignItems:'center', gap:6,
+              padding:`${large?10:8}px ${large?20:16}px`, borderRadius:20,
+              background:'linear-gradient(135deg,#1d5cff,#00cfff)',
+              boxShadow:'0 0 20px rgba(29,92,255,0.45)',
+              color:'#fff', textDecoration:'none',
+              fontFamily:"'Barlow Condensed',sans-serif",
+              fontWeight:700, fontSize:fs(12), letterSpacing:'0.06em', textTransform:'uppercase',
+              animation:'phoneCtaPulse 2s ease-in-out infinite',
+            }}>
+              <TgIcon />{ctaInChat}
+            </a>
+          </div>
+        )}
+      </div>
 
+      {/* Scenario pills */}
+      <div style={{ display:'flex', justifyContent:'center', gap:4, padding:'5px 10px',
+        background:'rgba(4,8,15,0.85)', borderTop:'1px solid rgba(255,255,255,0.04)', flexShrink:0 }}>
+        {scenarios.map((sc, i) => (
+          <button key={sc.id} onClick={() => setActiveIdx(i)} style={{
+            padding:`3px ${large?10:8}px`, borderRadius:10,
+            background: activeIdx===i ? 'rgba(29,92,255,0.2)' : 'rgba(255,255,255,0.03)',
+            border:`1px solid ${activeIdx===i ? 'rgba(29,92,255,0.45)' : 'rgba(255,255,255,0.06)'}`,
+            color: activeIdx===i ? '#00cfff' : 'rgba(180,200,255,0.3)',
+            fontFamily:"'Barlow Condensed',sans-serif",
+            fontWeight: activeIdx===i ? 700 : 500,
+            fontSize:fs(9), letterSpacing:'0.07em', textTransform:'uppercase',
+            cursor:'pointer', transition:'all 0.2s', whiteSpace:'nowrap',
+          }}>
+            {sc.icon} {sc.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Bottom bar */}
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 10px',
+        borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
+        <button
+          onClick={() => window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer')}
+          style={{ width:fs(32), height:fs(32), borderRadius:'50%', border:'none', flexShrink:0,
+            background:'linear-gradient(135deg,#1d5cff,#00cfff)',
+            boxShadow: typing ? '0 0 22px rgba(29,92,255,0.75)' : '0 0 14px rgba(29,92,255,0.45)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            cursor:'pointer', transition:'box-shadow 0.3s' }}>
+          <MicIcon />
+        </button>
+        <div style={{ flex:1, height:30, borderRadius:15,
+          background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)',
+          display:'flex', alignItems:'center', paddingLeft:11 }}>
+          <span style={{ fontFamily:"'Barlow',sans-serif", fontSize:fs(10), color:'rgba(255,255,255,0.2)' }}>
+            Message…
+          </span>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <div style={{ position:'absolute', bottom:24, right:'clamp(16px,4vw,40px)', display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
-        <div style={{ width:1, height:36, background:'linear-gradient(to bottom, rgba(29,92,255,0.5), transparent)' }} />
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.28)', letterSpacing:'0.12em', writingMode:'vertical-rl' }}>SCROLL</span>
-      </div>
-    </section>
-  )
-}
-
-/* ── Helpers ──────────────────────────────────────────────────────── */
-function fieldStyle(hasError: boolean): React.CSSProperties {
-  return {
-    width:'100%', padding:'8px 10px', borderRadius:10,
-    background:'rgba(255,255,255,0.05)',
-    border:`1px solid ${hasError ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.1)'}`,
-    color:'#f0f4ff', fontFamily:"'Barlow',sans-serif", fontSize:12,
-    outline:'none', boxSizing:'border-box',
-  }
-}
-
-function FormField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(0,207,255,0.7)', letterSpacing:'0.1em', textTransform:'uppercase', display:'block', marginBottom:4 }}>
-        {label}
-      </label>
-      {children}
-      {error && <div style={{ fontFamily:"'Barlow',sans-serif", fontSize:10, color:'#ef4444', marginTop:3 }}>{error}</div>}
     </div>
   )
 }
 
-/* ── Status bar icons ─────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════════════════════════════ */
+export default function Hero({ lang }: { lang: Lang }) {
+  const tr        = T[lang]
+  const scenarios = SCENARIOS[lang]
+
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [visibleN,  setVisibleN]  = useState(0)
+  const [typing,    setTyping]    = useState(false)
+  const [showCta,   setShowCta]   = useState(false)
+  const [fadeOut,   setFadeOut]   = useState(false)
+  const [progKey,   setProgKey]   = useState(0)
+  const [zoomed,    setZoomed]    = useState(false)
+
+  const smallChatRef = useRef<HTMLDivElement>(null)
+  const largeChatRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { setActiveIdx(0) }, [lang])
+
+  const scrollBot = useCallback(() => {
+    setTimeout(() => {
+      [smallChatRef, largeChatRef].forEach(r => {
+        if (r.current) r.current.scrollTop = 9999
+      })
+    }, 80)
+  }, [])
+
+  const scenarioDuration = useMemo(() => {
+    const msgs = scenarios[activeIdx].messages
+    return msgs[msgs.length - 1].delay + 350 + 4400
+  }, [activeIdx, scenarios])
+
+  /* Auto-play */
+  useEffect(() => {
+    setVisibleN(0); setTyping(false); setShowCta(false)
+    setFadeOut(false); setProgKey(k => k + 1)
+
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const msgs = scenarios[activeIdx].messages
+
+    msgs.forEach((m, i) => {
+      if (m.role === 'c' && m.delay > 400)
+        timers.push(setTimeout(() => { setTyping(true); scrollBot() }, m.delay - 750))
+      timers.push(setTimeout(() => {
+        setTyping(false); setVisibleN(i + 1); scrollBot()
+      }, m.delay + 350))
+    })
+
+    const lastDelay = msgs[msgs.length - 1].delay + 350
+    timers.push(setTimeout(() => setShowCta(true), lastDelay + 1000))
+    timers.push(setTimeout(() => {
+      setFadeOut(true)
+      timers.push(setTimeout(() => setActiveIdx(i => (i + 1) % scenarios.length), 450))
+    }, lastDelay + 4000))
+
+    return () => timers.forEach(clearTimeout)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIdx, lang])
+
+  /* Escape closes zoom */
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') setZoomed(false) }
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
+  }, [])
+
+  /* Lock body scroll while zoomed */
+  useEffect(() => {
+    document.body.style.overflow = zoomed ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [zoomed])
+
+  const phoneProps = {
+    scenarios, activeIdx, setActiveIdx, visibleN, typing, showCta, fadeOut,
+    progKey, scenarioDuration, online: tr.online, ctaInChat: tr.ctaInChat,
+  }
+
+  /* ── Zoomed overlay phone size ── */
+  // 310:660 aspect ratio, height capped at 85vh or 820px
+  const ZOOM_H = 820
+  const ZOOM_W = Math.round(ZOOM_H * 310 / 660) // ≈ 385px
+
+  return (
+    <>
+      <section style={{ position:'relative', minHeight:'100vh', display:'flex', alignItems:'center', padding:'80px 0 100px' }}>
+
+        {/* Top glow */}
+        <div style={{ position:'absolute', top:'-8%', left:'50%', transform:'translateX(-50%)', width:900, height:500,
+          background:'radial-gradient(ellipse 60% 55% at 50% 0%, rgba(29,92,255,0.42) 0%, rgba(0,207,255,0.1) 40%, transparent 70%)',
+          pointerEvents:'none' }} />
+
+        <div style={{ maxWidth:1200, width:'100%', margin:'0 auto', padding:'0 clamp(20px,5vw,60px)',
+          display:'flex', alignItems:'center', gap:'clamp(32px,5vw,72px)',
+          position:'relative', zIndex:1, flexWrap:'wrap' }}>
+
+          {/* ══ LEFT: copy ══════════════════════════════════════════════ */}
+          <div style={{ flex:'1 1 300px', minWidth:260 }}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.14em',
+              color:'rgba(0,207,255,0.7)', marginBottom:20, textTransform:'uppercase' }}>
+              {tr.tag}
+            </div>
+            <h1 style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, lineHeight:0.92,
+              letterSpacing:'-0.01em', textTransform:'uppercase',
+              fontSize:'clamp(46px,6vw,80px)', marginBottom:20, color:'#f0f4ff' }}>
+              {tr.h1a}<br />
+              <span style={{ background:'linear-gradient(120deg,#fff 0%,#60a5fa 55%,#00cfff 100%)',
+                WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
+                {tr.h1b}
+              </span>
+            </h1>
+            <p style={{ fontSize:15, color:'rgba(180,200,255,0.55)', lineHeight:1.75,
+              fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32 }}>{tr.sub}</p>
+            <div style={{ display:'flex', gap:28, marginBottom:40, flexWrap:'wrap' }}>
+              {tr.metrics.map(m => (
+                <div key={m.label}>
+                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, fontSize:26, color:'#00cfff', textTransform:'uppercase' }}>{m.val}</div>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:2 }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'rgba(29,92,255,0.75)', letterSpacing:'0.1em', textTransform:'uppercase' }}>
+              {tr.demo}
+            </div>
+          </div>
+
+          {/* ══ RIGHT: small iPhone (click to zoom) ══════════════════════ */}
+          <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center' }}>
+
+            <div style={{ position:'absolute', top:-30, left:-30, right:-30, height:700,
+              background:'radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,92,255,0.18) 0%, transparent 70%)',
+              borderRadius:'50%', pointerEvents:'none' }} />
+
+            {/* Clickable phone wrapper */}
+            <div
+              onClick={() => setZoomed(true)}
+              title={tr.expand}
+              style={{ position:'relative', width:310, height:660, flexShrink:0, cursor:'pointer' }}
+            >
+              {/* Expand hint — top-right corner */}
+              <div style={{
+                position:'absolute', top:16, right:16, zIndex:20,
+                width:28, height:28, borderRadius:8,
+                background:'rgba(4,8,15,0.7)',
+                backdropFilter:'blur(8px)',
+                border:'1px solid rgba(29,92,255,0.35)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                opacity:0.65, transition:'opacity 0.2s',
+                pointerEvents:'none',
+              }}>
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="rgba(0,207,255,0.9)" strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M9 1h4v4M5 13H1V9M14 1l-5 5M1 13l5-5"/>
+                </svg>
+              </div>
+
+              {/* Titanium frame */}
+              <div style={{ position:'absolute', inset:0, borderRadius:52,
+                background:'linear-gradient(160deg,#2f2f2f 0%,#1a1a1a 30%,#3c3c3c 50%,#1c1c1c 70%,#2d2d2d 100%)',
+                boxShadow:'0 0 0 0.5px rgba(255,255,255,0.09) inset, 0 0 0 1px rgba(0,0,0,0.8), 0 48px 90px rgba(0,0,0,0.65), 0 0 40px rgba(29,92,255,0.12)',
+                transition:'box-shadow 0.3s',
+              }}>
+                {([
+                  { s:'left',  t:100, h:18, k:'act' },
+                  { s:'left',  t:134, h:34, k:'vp'  },
+                  { s:'left',  t:178, h:34, k:'vm'  },
+                  { s:'right', t:152, h:52, k:'pwr' },
+                ] as const).map(b => (
+                  <div key={b.k} style={{ position:'absolute', ...(b.s==='left'?{left:-3}:{right:-3}),
+                    top:b.t, width:3, height:b.h,
+                    borderRadius:b.s==='left'?'2px 0 0 2px':'0 2px 2px 0', background:'#2e2e2e' }} />
+                ))}
+              </div>
+
+              <PhoneScreen {...phoneProps} chatRef={smallChatRef} />
+            </div>
+
+            {/* Navigation dots */}
+            <div style={{ display:'flex', gap:5, marginTop:14 }}>
+              {scenarios.map((_, i) => (
+                <button key={i} onClick={() => setActiveIdx(i)} style={{
+                  width: activeIdx===i ? 22 : 6, height:6, borderRadius:3, padding:0,
+                  background: activeIdx===i ? '#1d5cff' : 'rgba(255,255,255,0.15)',
+                  border:'none', cursor:'pointer', transition:'all 0.3s ease',
+                }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div style={{ position:'absolute', bottom:24, right:'clamp(16px,4vw,40px)',
+          display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+          <div style={{ width:1, height:36, background:'linear-gradient(to bottom,rgba(29,92,255,0.5),transparent)' }} />
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.28)',
+            letterSpacing:'0.12em', writingMode:'vertical-rl' }}>SCROLL</span>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          FULLSCREEN OVERLAY — FacilPay-inspired atmospheric phone
+      ════════════════════════════════════════════════════════════════ */}
+      {zoomed && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setZoomed(false) }}
+          style={{
+            position:'fixed', inset:0, zIndex:9999,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            animation:'overlayFadeIn 0.35s ease forwards',
+            /* Deep space + blue horizon burst */
+            background:`
+              radial-gradient(ellipse 110% 55% at 50% -8%, rgba(15,75,220,0.85) 0%, rgba(8,40,130,0.45) 28%, transparent 55%),
+              radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,207,255,0.18) 0%, transparent 45%),
+              #020510
+            `,
+          }}
+        >
+          {/* Stars layer */}
+          <div className="stars-bg" style={{ position:'absolute', inset:0, opacity:0.6 }} />
+
+          {/* Close button */}
+          <button
+            onClick={() => setZoomed(false)}
+            style={{ position:'absolute', top:24, right:24, zIndex:10001,
+              width:44, height:44, borderRadius:12,
+              background:'rgba(4,8,15,0.7)', backdropFilter:'blur(12px)',
+              border:'1px solid rgba(255,255,255,0.1)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              cursor:'pointer', color:'rgba(180,200,255,0.7)',
+              transition:'background 0.2s, border-color 0.2s',
+              fontFamily:'monospace', fontSize:16,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background='rgba(29,92,255,0.25)'; e.currentTarget.style.borderColor='rgba(29,92,255,0.5)' }}
+            onMouseLeave={e => { e.currentTarget.style.background='rgba(4,8,15,0.7)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.1)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+            </svg>
+          </button>
+
+          {/* Escape hint */}
+          <div style={{ position:'absolute', top:32, left:'50%', transform:'translateX(-50%)',
+            fontFamily:"'DM Mono',monospace", fontSize:10,
+            color:'rgba(180,200,255,0.25)', letterSpacing:'0.1em', whiteSpace:'nowrap' }}>
+            ESC — fermer
+          </div>
+
+          {/* Phone wrapper */}
+          <div style={{ position:'relative', animation:'phoneZoomIn 0.42s cubic-bezier(0.25,0,0,1) forwards' }}>
+
+            {/* Blue corona — atmospheric glow ABOVE the phone */}
+            <div style={{
+              position:'absolute', top:-50, left:'50%',
+              transform:'translateX(-50%)',
+              width:'130%', height:120,
+              background:'radial-gradient(ellipse 85% 100% at 50% 100%, rgba(29,92,255,0.7) 0%, rgba(0,207,255,0.3) 35%, transparent 70%)',
+              filter:'blur(18px)',
+              pointerEvents:'none', zIndex:0,
+              animation:'coronaFlare 3s ease-in-out infinite',
+            }} />
+
+            {/* Secondary softer halo */}
+            <div style={{
+              position:'absolute', top:-100, left:'50%', transform:'translateX(-50%)',
+              width:'160%', height:200,
+              background:'radial-gradient(ellipse 70% 80% at 50% 100%, rgba(0,207,255,0.12) 0%, transparent 65%)',
+              filter:'blur(30px)',
+              pointerEvents:'none', zIndex:0,
+            }} />
+
+            {/* Titanium frame — zoomed, with blue rim glow */}
+            <div style={{
+              position:'relative', zIndex:1,
+              width:`min(${ZOOM_W}px, 56vw)`,
+              height:`min(${ZOOM_H}px, 85vh)`,
+              flexShrink:0,
+            }}>
+              <div style={{
+                position:'absolute', inset:0, borderRadius:64,
+                background:'linear-gradient(160deg,#1e2d4a 0%,#0d1828 25%,#1a2840 45%,#0a1220 70%,#1c2a40 100%)',
+                boxShadow:`
+                  0 0 0 1px rgba(29,92,255,0.4),
+                  0 0 0 2px rgba(0,0,0,0.9),
+                  inset 0 0 0 0.5px rgba(255,255,255,0.07),
+                  0 0 40px rgba(29,92,255,0.55),
+                  0 0 80px rgba(29,92,255,0.28),
+                  0 0 140px rgba(0,207,255,0.12),
+                  0 80px 140px rgba(0,0,0,0.85)
+                `,
+              }}>
+                {/* Buttons */}
+                {([
+                  { s:'left',  t:120, h:22, k:'act' },
+                  { s:'left',  t:162, h:42, k:'vp'  },
+                  { s:'left',  t:216, h:42, k:'vm'  },
+                  { s:'right', t:184, h:64, k:'pwr' },
+                ] as const).map(b => (
+                  <div key={b.k} style={{ position:'absolute', ...(b.s==='left'?{left:-4}:{right:-4}),
+                    top:b.t, width:4, height:b.h,
+                    borderRadius:b.s==='left'?'2px 0 0 2px':'0 2px 2px 0',
+                    background:'#1e2d44',
+                    boxShadow:b.s==='left'?'-1px 0 4px rgba(29,92,255,0.15)':'1px 0 4px rgba(29,92,255,0.15)' }} />
+                ))}
+              </div>
+
+              {/* Screen */}
+              <PhoneScreen
+                {...phoneProps}
+                chatRef={largeChatRef}
+                large
+              />
+            </div>
+
+            {/* Bottom atmospheric fade */}
+            <div style={{
+              position:'absolute', bottom:-40, left:'50%', transform:'translateX(-50%)',
+              width:'120%', height:80,
+              background:'radial-gradient(ellipse 80% 100% at 50% 0%, rgba(29,92,255,0.15) 0%, transparent 60%)',
+              filter:'blur(15px)',
+              pointerEvents:'none',
+            }} />
+
+            {/* Nav dots below zoomed phone */}
+            <div style={{ display:'flex', justifyContent:'center', gap:6, marginTop:20 }}>
+              {scenarios.map((_, i) => (
+                <button key={i} onClick={() => setActiveIdx(i)} style={{
+                  width: activeIdx===i ? 26 : 7, height:7, borderRadius:4, padding:0,
+                  background: activeIdx===i ? '#1d5cff' : 'rgba(255,255,255,0.2)',
+                  border:'none', cursor:'pointer', transition:'all 0.3s ease',
+                }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+/* ── Icons ────────────────────────────────────────────────────────────── */
+function MicIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" x2="12" y1="19" y2="22"/>
+    </svg>
+  )
+}
+function TgIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    </svg>
+  )
+}
 function SignalIcon() {
   return (
     <svg width="15" height="11" viewBox="0 0 15 11" fill="rgba(255,255,255,0.75)">
-      <rect x="0"   y="7"   width="2.5" height="4"  rx="0.5"/>
-      <rect x="3.5" y="4.5" width="2.5" height="6.5"rx="0.5"/>
-      <rect x="7"   y="2"   width="2.5" height="9"  rx="0.5"/>
-      <rect x="10.5"y="0"   width="2.5" height="11" rx="0.5"/>
+      <rect x="0" y="7" width="2.5" height="4" rx="0.5"/>
+      <rect x="3.5" y="4.5" width="2.5" height="6.5" rx="0.5"/>
+      <rect x="7" y="2" width="2.5" height="9" rx="0.5"/>
+      <rect x="10.5" y="0" width="2.5" height="11" rx="0.5"/>
     </svg>
   )
 }
@@ -474,13 +713,6 @@ function BatteryIcon() {
       <rect x="0.5" y="0.5" width="18" height="11" rx="3" stroke="rgba(255,255,255,0.5)"/>
       <rect x="2" y="2" width="12" height="8" rx="1.5" fill="rgba(255,255,255,0.7)"/>
       <path d="M19.5 4v4c1.2-.5 1.2-3.5 0-4z" fill="rgba(255,255,255,0.45)"/>
-    </svg>
-  )
-}
-function TgIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
     </svg>
   )
 }
