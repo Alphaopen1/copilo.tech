@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react'
 
 const T = {
-  fr: { links: [['#features','Fonctionnalités'],['#demo','Démo'],['#how','Comment'],['#telegram','Telegram'],['#waitlist','Accès'],['/onboard','Créer mon Copilo']], cta: 'Démarrer' },
-  en: { links: [['#features','Features'],['#demo','Demo'],['#how','How'],['#telegram','Telegram'],['#waitlist','Access'],['/onboard','Create my Copilo']], cta: 'Get Started' },
+  fr: { links: [['#features','Fonctionnalités'],['#demo','Démo'],['/simulateur','Simulateur'],['#waitlist','Accès'],['/onboard','Créer mon Copilo']], cta: 'Démarrer' },
+  en: { links: [['#features','Features'],['#demo','Demo'],['/simulateur','Simulateur'],['#waitlist','Access'],['/onboard','Create my Copilo']], cta: 'Get Started' },
 }
 
 export default function Nav({ lang, setLang, linkPrefix = '' }: { lang: 'fr' | 'en'; setLang: (l: 'fr' | 'en') => void; linkPrefix?: string }) {

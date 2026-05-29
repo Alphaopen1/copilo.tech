@@ -49,7 +49,7 @@ export default function OgImage() {
           fontSize: 28, color: 'rgba(180,200,255,0.65)',
           maxWidth: 800, textAlign: 'center', lineHeight: 1.4, display: 'flex',
         }}>
-          Push-to-talk · Courses CPAM · Calendrier · CA automatique
+          Push-to-talk · Courses · Calendrier · Recettes auto
         </div>
 
         {/* Tags */}

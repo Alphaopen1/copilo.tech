@@ -4,15 +4,12 @@ import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import Features from '@/components/Features'
 import HowItWorks from '@/components/HowItWorks'
-import AvatarSection from '@/components/AvatarSection'
-import TelegramSection from '@/components/TelegramSection'
 import Waitlist from '@/components/Waitlist'
 import Footer from '@/components/Footer'
 import CustomCursor from '@/components/CustomCursor'
 import ProgressBar from '@/components/ProgressBar'
 import ScrollReveal from '@/components/ScrollReveal'
 import VideoBanner from '@/components/VideoBanner'
-import StatementSection from '@/components/StatementSection'
 import StatBand from '@/components/StatBand'
 
 export default function Home() {
@@ -33,11 +30,8 @@ export default function Home() {
       <main className="relative z-10">
         <Hero lang={lang} />
         <VideoBanner />
-        <StatementSection lang={lang} />
         <Features lang={lang} />
         <HowItWorks lang={lang} />
-        <AvatarSection lang={lang} />
-        <TelegramSection lang={lang} />
         <StatBand lang={lang} />
         <Waitlist lang={lang} />
       </main>

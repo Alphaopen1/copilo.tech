@@ -26,7 +26,7 @@ export default function Confidentialite() {
       </Section>
 
       <Section title="Chiffrement & sécurité">
-        <p>Toutes les données sensibles sont chiffrées via <strong>HKDF + Fernet</strong> avant stockage. Les informations de patient (nom, téléphone) ne sont jamais stockées en clair. Les audio vocaux sont traités à la volée et jamais persistés.</p>
+        <p>Toutes les données sensibles sont chiffrées via <strong>HKDF + Fernet</strong> avant stockage. Les informations de client (nom, téléphone) ne sont jamais stockées en clair. Les audio vocaux sont traités à la volée et jamais persistés.</p>
       </Section>
 
       <Section title="Hébergement RGPD">

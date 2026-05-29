@@ -49,7 +49,7 @@ const T = {
         border: 'rgba(29,92,255,0.28)',
         title: 'MON COPILO PERSO',
         tag: '@Copilo_de_PRÉNOM',
-        desc: 'Bot dédié à toi. Parle-lui en push-to-talk depuis la route — courses, CA CPAM, calendrier.',
+        desc: 'Bot dédié à toi. Parle-lui en push-to-talk depuis la route — courses, recettes, calendrier.',
         time: '2 min',
       },
       {
@@ -93,7 +93,7 @@ const T = {
         border: 'rgba(29,92,255,0.28)',
         title: 'MY PERSONAL COPILO',
         tag: '@Copilo_de_NAME',
-        desc: 'Bot dedicated to you. Talk to it push-to-talk on the road — rides, CPAM revenue, calendar.',
+        desc: 'Bot dedicated to you. Talk to it push-to-talk on the road — rides, revenue, calendar.',
         time: '2 min',
       },
       {

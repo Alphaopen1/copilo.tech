@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type Lang    = 'fr' | 'en'
 type MsgRole = 'u' | 'c'
-interface ScenarioMsg { role: MsgRole; text: string; delay: number }
+interface ScenarioMsg { role: MsgRole; text: string; delay: number; voice?: boolean; call?: boolean }
 interface Scenario    { id: string; label: string; icon: string; messages: ScenarioMsg[] }
 
 /* ─── Scenario data ──────────────────────────────────────────────────── */
@@ -13,16 +13,25 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
     {
       id: 'course', label: 'Course', icon: '🚗',
       messages: [
-        { role: 'u', text: 'Course demain 14h30 Nice → CHU Pasteur, M. Bernard', delay: 0 },
-        { role: 'c', text: 'Voici la course :\n• 28/05 à 14:30 — M. Bernard\n• Nice → CHU Pasteur · 22 min\n• CA CPAM 18,40 €\n\nConfirmer ?', delay: 1800 },
+        { role: 'u', text: 'Course demain 14h30 Nice → Aéroport NCE, M. Bernard', delay: 0, voice: true },
+        { role: 'c', text: 'Voici la course :\n• 28/05 à 14:30 — M. Bernard\n• Nice → Aéroport NCE · 22 min\n• Montant 32 €\n\nConfirmer ?', delay: 1800 },
         { role: 'u', text: 'Oui confirmer', delay: 3400 },
         { role: 'c', text: 'Course #87 créée ✓\nGoogle Calendar mis à jour\nRappel dans 13h30', delay: 5200 },
       ],
     },
     {
+      id: 'appel', label: 'Appel', icon: '📞',
+      messages: [
+        { role: 'c', text: 'Bonjour, il me faut un taxi demain 8h, 12 rue de Paris → hôpital.', delay: 0, call: true },
+        { role: 'c', text: 'Course détectée depuis l\'appel :\n• Demain 08:00\n• 12 rue de Paris → Hôpital\n\nConfirmer et rappeler le client ?', delay: 2200 },
+        { role: 'u', text: 'Oui, confirme', delay: 4000, voice: true },
+        { role: 'c', text: 'Course créée ✓\nSMS de confirmation envoyé au client\nAjoutée au Google Calendar', delay: 5600 },
+      ],
+    },
+    {
       id: 'brief', label: 'Brief', icon: '☀️',
       messages: [
-        { role: 'c', text: 'Bonjour ! Brief du 28/05 :\n\n• 3 courses planifiées\n• 09:00 Mme Dupont → Cannes\n• 11:30 M. Karim → Aéroport NCE\n• 15:00 Mme Leroy → Clinique\n\nCA estimé : 142,80 €\nPéages : 8,40 €', delay: 0 },
+        { role: 'c', text: 'Bonjour ! Brief du 28/05 :\n\n• 3 courses planifiées\n• 09:00 Mme Dupont → Cannes\n• 11:30 M. Karim → Aéroport NCE\n• 15:00 Mme Leroy → Gare Nice\n\nCA estimé : 142,80 €\nPéages : 8,40 €', delay: 0 },
         { role: 'u', text: "C'est noté, merci Copilo", delay: 2200 },
         { role: 'c', text: 'Bonne route ! Je te préviens 15 min avant chaque course.', delay: 3800 },
       ],
@@ -31,18 +40,18 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
       id: 'doublet', label: 'Doublet', icon: '👥',
       messages: [
         { role: 'u', text: 'Course 9h Nice → Cannes, M. Hajj', delay: 0 },
-        { role: 'c', text: 'Doublet possible !\n\nMme Dupont part aussi Nice → Cannes demain 09:00.\n\nFusionner ? 1 péage · CA × 2 patients', delay: 2000 },
+        { role: 'c', text: 'Doublet possible !\n\nMme Dupont va aussi Nice → Cannes demain 09:00.\n\nFusionner ? 1 trajet · 2 clients', delay: 2000 },
         { role: 'u', text: 'Oui, fusionner', delay: 3800 },
-        { role: 'c', text: 'Doublet #88 créé ✓\n• Mme Dupont + M. Hajj\n• 46,20 € × 2 patients\nCalendrier en orange', delay: 5600 },
+        { role: 'c', text: 'Doublet #88 créé ✓\n• Mme Dupont + M. Hajj\n• 1 trajet · 2 clients\nCalendrier en orange', delay: 5600 },
       ],
     },
     {
-      id: 'peage', label: 'Péage', icon: '🛣️',
+      id: 'bilan', label: 'Bilan', icon: '📊',
       messages: [
-        { role: 'u', text: 'Péage A8 ce matin, 4,80 €', delay: 0 },
-        { role: 'c', text: 'Péage mémorisé ✓\n• A8 · 4,80 € · 28/05 09:14\n\nIl sera auto-associé aux courses Nice → Cannes.', delay: 1800 },
-        { role: 'u', text: 'Parfait merci', delay: 3200 },
-        { role: 'c', text: "Dans 2 semaines, je m'en souviendrai automatiquement.", delay: 4600 },
+        { role: 'u', text: 'Fais le bilan de ma journée', delay: 0 },
+        { role: 'c', text: 'Bilan du 28/05 :\n• 7 courses · 312,40 € CA\n• Péages 14,20 €\n• Net : 298,20 €\n\nGénérer l\'export compta ?', delay: 1800 },
+        { role: 'u', text: 'Oui, envoie-le', delay: 3400 },
+        { role: 'c', text: 'Export PDF + CSV générés ✓\nEnvoyés sur ton email\nCompta à jour', delay: 5200 },
       ],
     },
   ],
@@ -50,16 +59,25 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
     {
       id: 'course', label: 'Ride', icon: '🚗',
       messages: [
-        { role: 'u', text: 'Ride tomorrow 2:30pm Nice → Pasteur Hospital, Mr Bernard', delay: 0 },
-        { role: 'c', text: 'Ride details:\n• May 28 at 14:30 — Mr Bernard\n• Nice → Pasteur · 22 min\n• Revenue €18.40\n\nConfirm?', delay: 1800 },
+        { role: 'u', text: 'Ride tomorrow 2:30pm Nice → NCE Airport, Mr Bernard', delay: 0, voice: true },
+        { role: 'c', text: 'Ride details:\n• May 28 at 14:30 — Mr Bernard\n• Nice → NCE Airport · 22 min\n• Fare €32\n\nConfirm?', delay: 1800 },
         { role: 'u', text: 'Yes confirm', delay: 3400 },
         { role: 'c', text: 'Ride #87 created ✓\nGoogle Calendar updated\nReminder in 13h30', delay: 5200 },
       ],
     },
     {
+      id: 'appel', label: 'Call', icon: '📞',
+      messages: [
+        { role: 'c', text: 'Hi, I need a taxi tomorrow 8am, 12 Paris St → hospital.', delay: 0, call: true },
+        { role: 'c', text: 'Ride detected from the call:\n• Tomorrow 08:00\n• 12 Paris St → Hospital\n\nConfirm and call the client back?', delay: 2200 },
+        { role: 'u', text: 'Yes, confirm', delay: 4000, voice: true },
+        { role: 'c', text: 'Ride created ✓\nConfirmation SMS sent to client\nAdded to Google Calendar', delay: 5600 },
+      ],
+    },
+    {
       id: 'brief', label: 'Brief', icon: '☀️',
       messages: [
-        { role: 'c', text: 'Good morning! Brief May 28:\n\n• 3 rides scheduled\n• 09:00 Ms Dupont → Cannes\n• 11:30 Mr Karim → NCE Airport\n• 15:00 Ms Leroy → Clinic\n\nEst. revenue: €142.80\nTolls: €8.40', delay: 0 },
+        { role: 'c', text: 'Good morning! Brief May 28:\n\n• 3 rides scheduled\n• 09:00 Ms Dupont → Cannes\n• 11:30 Mr Karim → NCE Airport\n• 15:00 Ms Leroy → Nice Station\n\nEst. revenue: €142.80\nTolls: €8.40', delay: 0 },
         { role: 'u', text: 'Got it, thanks Copilo', delay: 2200 },
         { role: 'c', text: "Safe drive! I'll alert you 15 min before each ride.", delay: 3800 },
       ],
@@ -68,18 +86,18 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
       id: 'doublet', label: 'Shared', icon: '👥',
       messages: [
         { role: 'u', text: 'Ride 9am Nice → Cannes, Mr Hajj', delay: 0 },
-        { role: 'c', text: 'Shared ride detected!\n\nMs Dupont also goes Nice → Cannes tomorrow 09:00.\n\nMerge? 1 toll · revenue × 2 patients', delay: 2000 },
+        { role: 'c', text: 'Shared ride detected!\n\nMs Dupont also goes Nice → Cannes tomorrow 09:00.\n\nMerge? 1 trip · 2 clients', delay: 2000 },
         { role: 'u', text: 'Yes merge', delay: 3800 },
-        { role: 'c', text: 'Shared #88 created ✓\n• Ms Dupont + Mr Hajj\n• €46.20 × 2 patients\nCalendar in orange', delay: 5600 },
+        { role: 'c', text: 'Shared #88 created ✓\n• Ms Dupont + Mr Hajj\n• 1 trip · 2 clients\nCalendar in orange', delay: 5600 },
       ],
     },
     {
-      id: 'peage', label: 'Toll', icon: '🛣️',
+      id: 'bilan', label: 'Summary', icon: '📊',
       messages: [
-        { role: 'u', text: 'A8 toll this morning, €4.80', delay: 0 },
-        { role: 'c', text: 'Toll saved ✓\n• A8 · €4.80 · May 28 09:14\n\nAuto-linked to Nice → Cannes rides.', delay: 1800 },
-        { role: 'u', text: 'Perfect thanks', delay: 3200 },
-        { role: 'c', text: "In 2 weeks, I'll remember it automatically.", delay: 4600 },
+        { role: 'u', text: 'Wrap up my day', delay: 0 },
+        { role: 'c', text: 'Today May 28:\n• 7 rides · €312.40 revenue\n• Tolls €14.20\n• Net: €298.20\n\nGenerate the accounting export?', delay: 1800 },
+        { role: 'u', text: 'Yes, send it', delay: 3400 },
+        { role: 'c', text: 'PDF + CSV export generated ✓\nSent to your email\nBookkeeping up to date', delay: 5200 },
       ],
     },
   ],
@@ -88,9 +106,9 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
 const T = {
   fr: {
     tag: '// VOCAL · TELEGRAM · IA EMBARQUÉE',
-    h1a: 'TON IA',
-    h1b: 'EMBARQUÉE.',
-    sub: 'Push-to-talk. Zéro écoute passive. Courses, CA CPAM, calendrier — tout géré pendant que tu conduis.',
+    h1a: 'TON ASSISTANT IA',
+    h1b: 'EMBARQUÉ.',
+    sub: 'Push-to-talk. Zéro écoute passive. Courses, recettes, calendrier — tout géré pendant que tu conduis.',
     demo: '4 scénarios réels, en direct ↓',
     metrics: [
       { val: '0€',    label: 'pour démarrer' },
@@ -104,8 +122,8 @@ const T = {
   en: {
     tag: '// VOICE · TELEGRAM · ON-BOARD AI',
     h1a: 'YOUR ON-BOARD',
-    h1b: 'AI COPILOT.',
-    sub: 'Push-to-talk. Zero passive listening. Rides, CPAM revenue, calendar — all managed while you drive.',
+    h1b: 'AI ASSISTANT.',
+    sub: 'Push-to-talk. Zero passive listening. Rides, revenue, calendar — all managed while you drive.',
     demo: '4 real scenarios, live ↓',
     metrics: [
       { val: '0€',    label: 'to start'  },
@@ -140,7 +158,7 @@ function PhoneScreen({
   scenarios, activeIdx, setActiveIdx, visibleN, typing, showCta,
   fadeOut, progKey, scenarioDuration, chatRef, online, ctaInChat, large,
 }: PhoneScreenProps) {
-  const s  = large ? 1.25 : 1       // scale factor for text/avatar sizes
+  const s  = large ? 1.7 : 1        // scale factor for text/avatar sizes (large = readable once revealed)
   const fs = (n: number) => n * s    // font scale helper
   const current = scenarios[activeIdx]
 
@@ -237,6 +255,23 @@ function PhoneScreen({
               boxShadow: m.role==='u' ? '0 2px 12px rgba(29,92,255,0.3)' : 'none',
               whiteSpace:'pre-wrap',
             }}>
+              {m.voice && (
+                <div style={{ display:'flex', alignItems:'center', gap:fs(3), marginBottom:fs(5) }}>
+                  <MicIcon />
+                  {[6,11,7,13,8,5,10,7].map((h,bi)=>(
+                    <span key={bi} style={{ width:fs(2), height:fs(h), borderRadius:2, background:'rgba(255,255,255,0.72)' }} />
+                  ))}
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:fs(8), color:'rgba(255,255,255,0.78)', marginLeft:fs(3) }}>0:0{(i%5)+3}</span>
+                </div>
+              )}
+              {m.call && (
+                <div style={{ display:'inline-flex', alignItems:'center', gap:fs(4), marginBottom:fs(5),
+                  padding:`${fs(2)}px ${fs(7)}px`, borderRadius:6, background:'rgba(0,207,255,0.12)',
+                  border:'1px solid rgba(0,207,255,0.25)', fontFamily:"'DM Mono',monospace", fontSize:fs(8),
+                  letterSpacing:'0.06em', color:'rgba(0,207,255,0.9)', textTransform:'uppercase' }}>
+                  📞 Appel transcrit
+                </div>
+              )}
               {m.text}
               <div style={{ fontFamily:"'DM Mono',monospace", fontSize:fs(7.5),
                 color:'rgba(255,255,255,0.22)', marginTop:3,
@@ -274,7 +309,7 @@ function PhoneScreen({
 
         {showCta && !typing && (
           <div style={{ display:'flex', justifyContent:'center', marginTop:8, animation:'msgIn 0.4s ease forwards' }}>
-            <a href="/onboard?type=bot" style={{
+            <a href="/onboard?type=bot" onClick={(e) => e.stopPropagation()} style={{
               display:'inline-flex', alignItems:'center', gap:6,
               padding:`${large?10:8}px ${large?20:16}px`, borderRadius:20,
               background:'linear-gradient(135deg,#1d5cff,#00cfff)',
@@ -294,7 +329,7 @@ function PhoneScreen({
       <div style={{ display:'flex', justifyContent:'center', gap:4, padding:'5px 10px',
         background:'rgba(4,8,15,0.85)', borderTop:'1px solid rgba(255,255,255,0.04)', flexShrink:0 }}>
         {scenarios.map((sc, i) => (
-          <button key={sc.id} onClick={() => setActiveIdx(i)} style={{
+          <button key={sc.id} onClick={(e) => { e.stopPropagation(); setActiveIdx(i) }} style={{
             padding:`3px ${large?10:8}px`, borderRadius:10,
             background: activeIdx===i ? 'rgba(29,92,255,0.2)' : 'rgba(255,255,255,0.03)',
             border:`1px solid ${activeIdx===i ? 'rgba(29,92,255,0.45)' : 'rgba(255,255,255,0.06)'}`,
@@ -313,7 +348,7 @@ function PhoneScreen({
       <div style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 10px',
         borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
         <button
-          onClick={() => window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer')}
+          onClick={(e) => { e.stopPropagation(); window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer') }}
           aria-label="Ouvrir Copilo sur Telegram"
           style={{ width:fs(32), height:fs(32), borderRadius:'50%', border:'none', flexShrink:0,
             background:'linear-gradient(135deg,#1d5cff,#00cfff)',
@@ -407,6 +442,61 @@ export default function Hero({ lang }: { lang: Lang }) {
     return () => { document.body.style.overflow = '' }
   }, [zoomed])
 
+  /* ── Scroll-driven zoom on the Hero simulation phone (FacilPay) ────── */
+  const heroRef      = useRef<HTMLElement | null>(null)
+  const copyRef      = useRef<HTMLDivElement>(null)
+  const glowRef      = useRef<HTMLDivElement>(null)
+  const phoneZoomRef = useRef<HTMLDivElement>(null)
+  const hintRef      = useRef<HTMLDivElement>(null)
+  const [zoomEnabled, setZoomEnabled] = useState(false)
+
+  /* Enable the effect only when motion is allowed (avoids SSR/hydration issues) */
+  useEffect(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    setZoomEnabled(!reduce)
+  }, [])
+
+  useEffect(() => {
+    if (!zoomEnabled) return
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const el = heroRef.current
+      if (!el) return
+      const vh = window.innerHeight
+      const total = el.offsetHeight - vh
+      const top = el.getBoundingClientRect().top
+      const p = total > 0 ? Math.min(Math.max(-top / total, 0), 1) : 0   // 0 → 1
+      // p=0 : on ne voit que le HAUT d'un grand iPhone (façade FacilPay), posé
+      // dans la moitié basse. En scrollant il remonte et rétrécit → le téléphone
+      // entier + la simulation se révèlent. Net partout (scale ≤ 1, DOM natif = 4K).
+      // Mobile-first : sur petit écran le téléphone reste plus grand une fois
+      // révélé (texte lisible) ; sur desktop il rétrécit un peu plus.
+      const kEnd = window.innerWidth < 640 ? 0.84 : 0.66
+      const k  = 1.0 - p * (1.0 - kEnd)  // 1.0 (haut géant) → kEnd (tél entier visible)
+      const ty = 50 - p * 47             // vh : top à 50vh (moitié basse) → 3vh (centré)
+      if (phoneZoomRef.current) {
+        phoneZoomRef.current.style.top = `${ty}vh`
+        phoneZoomRef.current.style.transform = `translateX(-50%) translateZ(0) scale(${k})`
+      }
+      if (copyRef.current) {
+        copyRef.current.style.opacity   = String(Math.max(0, 1 - p * 2.0))
+        copyRef.current.style.transform = `translateY(${-p * 40}px)`
+      }
+      if (glowRef.current) glowRef.current.style.opacity = String(0.95 - p * 0.2)
+      if (hintRef.current) hintRef.current.style.opacity = String(Math.max(0, 1 - p * 4))
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [zoomEnabled])
+
   const phoneProps = {
     scenarios, activeIdx, setActiveIdx, visibleN, typing, showCta, fadeOut,
     progKey, scenarioDuration, online: tr.online, ctaInChat: tr.ctaInChat,
@@ -419,117 +509,103 @@ export default function Hero({ lang }: { lang: Lang }) {
 
   return (
     <>
-      <section style={{ position:'relative', minHeight:'100vh', display:'flex', alignItems:'center', padding:'80px 0 100px' }}>
+      <section ref={heroRef} style={{ position:'relative', height: zoomEnabled ? '220vh' : undefined, minHeight: zoomEnabled ? undefined : '100vh' }}>
+       <div style={{ position: zoomEnabled ? 'sticky' : 'relative', top:0,
+         height: zoomEnabled ? '100vh' : 'auto', minHeight: zoomEnabled ? undefined : '100vh',
+         display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
 
-        {/* Top glow */}
-        <div style={{ position:'absolute', top:'-8%', left:'50%', transform:'translateX(-50%)', width:900, height:500,
-          background:'radial-gradient(ellipse 60% 55% at 50% 0%, rgba(29,92,255,0.42) 0%, rgba(0,207,255,0.1) 40%, transparent 70%)',
-          pointerEvents:'none' }} />
+        {/* ── Neon-blue sunrise glow (behind the phone's upper edge, ~mid-screen) ── */}
+        <div ref={glowRef} aria-hidden style={{ position:'absolute', top:'8%', left:'50%', transform:'translateX(-50%)',
+          width:'min(1300px,135vw)', height:'72vh', opacity:0.95, transition:'opacity 0.15s linear', zIndex:0,
+          background:'radial-gradient(ellipse 55% 50% at 50% 62%, rgba(0,225,255,0.55) 0%, rgba(29,110,255,0.42) 26%, rgba(20,60,200,0.14) 50%, transparent 72%)',
+          filter:'blur(6px)', pointerEvents:'none' }} />
+        {/* thin neon horizon line */}
+        <div aria-hidden style={{ position:'absolute', top:'49%', left:'50%', transform:'translateX(-50%)',
+          width:'min(900px,82vw)', height:2, zIndex:0,
+          background:'linear-gradient(90deg, transparent, rgba(140,230,255,0.85), transparent)',
+          filter:'blur(1px)', pointerEvents:'none' }} />
 
-        <div style={{ maxWidth:1200, width:'100%', margin:'0 auto', padding:'0 clamp(20px,5vw,60px)',
-          display:'flex', alignItems:'center', gap:'clamp(32px,5vw,72px)',
-          position:'relative', zIndex:1, flexWrap:'wrap' }}>
-
-          {/* ══ LEFT: copy ══════════════════════════════════════════════ */}
-          <div style={{ flex:'1 1 300px', minWidth:260 }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.14em',
-              color:'rgba(0,207,255,0.7)', marginBottom:20, textTransform:'uppercase' }}>
-              {tr.tag}
-            </div>
-            <h1 style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, lineHeight:0.92,
-              letterSpacing:'-0.01em', textTransform:'uppercase',
-              fontSize:'clamp(46px,6vw,80px)', marginBottom:20, color:'#f0f4ff' }}>
-              {tr.h1a}<br />
-              <span style={{ background:'linear-gradient(120deg,#fff 0%,#60a5fa 55%,#00cfff 100%)',
-                WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
-                {tr.h1b}
-              </span>
-            </h1>
-            <p style={{ fontSize:15, color:'rgba(180,200,255,0.78)', lineHeight:1.75,
-              fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32 }}>{tr.sub}</p>
-            <div style={{ display:'flex', gap:28, marginBottom:40, flexWrap:'wrap' }}>
-              {tr.metrics.map(m => (
-                <div key={m.label}>
-                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, fontSize:26, color:'#00cfff', textTransform:'uppercase' }}>{m.val}</div>
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:2 }}>{m.label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'rgba(29,92,255,0.75)', letterSpacing:'0.1em', textTransform:'uppercase' }}>
-              {tr.demo}
-            </div>
+        {/* ══ TOP HALF : title zone (under the fixed header), fades on scroll ══ */}
+        <div ref={copyRef} style={{ position:'absolute', top:0, left:0, right:0, height:'50vh',
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+          textAlign:'center', zIndex:2, padding:'56px clamp(16px,5vw,24px) 0', pointerEvents:'none',
+          willChange:'opacity, transform' }}>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.14em',
+            color:'rgba(0,207,255,0.7)', marginBottom:16, textTransform:'uppercase' }}>
+            {tr.tag}
           </div>
-
-          {/* ══ RIGHT: small iPhone (click to zoom) ══════════════════════ */}
-          <div style={{ flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center' }}>
-
-            <div style={{ position:'absolute', top:-30, left:-30, right:-30, height:700,
-              background:'radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,92,255,0.18) 0%, transparent 70%)',
-              borderRadius:'50%', pointerEvents:'none' }} />
-
-            {/* Clickable phone wrapper */}
-            <div
-              onClick={() => setZoomed(true)}
-              title={tr.expand}
-              style={{ position:'relative', width:310, height:660, flexShrink:0, cursor:'pointer' }}
-            >
-              {/* Expand hint — top-right corner */}
-              <div style={{
-                position:'absolute', top:16, right:16, zIndex:20,
-                width:28, height:28, borderRadius:8,
-                background:'rgba(4,8,15,0.7)',
-                backdropFilter:'blur(8px)',
-                border:'1px solid rgba(29,92,255,0.35)',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                opacity:0.65, transition:'opacity 0.2s',
-                pointerEvents:'none',
-              }}>
-                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="rgba(0,207,255,0.9)" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M9 1h4v4M5 13H1V9M14 1l-5 5M1 13l5-5"/>
-                </svg>
+          <h1 style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, lineHeight:0.92,
+            letterSpacing:'-0.01em', textTransform:'uppercase',
+            fontSize:'clamp(40px,7.5vw,86px)', margin:'0 auto 16px', maxWidth:820, color:'#f0f4ff' }}>
+            {tr.h1a}{' '}
+            <span style={{ background:'linear-gradient(120deg,#fff 0%,#60a5fa 55%,#00cfff 100%)',
+              WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
+              {tr.h1b}
+            </span>
+          </h1>
+          <p style={{ fontSize:15, color:'rgba(180,200,255,0.78)', lineHeight:1.7,
+            fontFamily:"'Barlow',sans-serif", maxWidth:430, margin:'0 auto 20px' }}>{tr.sub}</p>
+          <div style={{ display:'flex', gap:'clamp(20px,5vw,32px)', justifyContent:'center', flexWrap:'wrap' }}>
+            {tr.metrics.map(m => (
+              <div key={m.label}>
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:800, fontSize:26, color:'#00cfff', textTransform:'uppercase' }}>{m.val}</div>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:2 }}>{m.label}</div>
               </div>
-
-              {/* Titanium frame */}
-              <div style={{ position:'absolute', inset:0, borderRadius:52,
-                background:'linear-gradient(160deg,#2f2f2f 0%,#1a1a1a 30%,#3c3c3c 50%,#1c1c1c 70%,#2d2d2d 100%)',
-                boxShadow:'0 0 0 0.5px rgba(255,255,255,0.09) inset, 0 0 0 1px rgba(0,0,0,0.8), 0 48px 90px rgba(0,0,0,0.65), 0 0 40px rgba(29,92,255,0.12)',
-                transition:'box-shadow 0.3s',
-              }}>
-                {([
-                  { s:'left',  t:100, h:18, k:'act' },
-                  { s:'left',  t:134, h:34, k:'vp'  },
-                  { s:'left',  t:178, h:34, k:'vm'  },
-                  { s:'right', t:152, h:52, k:'pwr' },
-                ] as const).map(b => (
-                  <div key={b.k} style={{ position:'absolute', ...(b.s==='left'?{left:-3}:{right:-3}),
-                    top:b.t, width:3, height:b.h,
-                    borderRadius:b.s==='left'?'2px 0 0 2px':'0 2px 2px 0', background:'#2e2e2e' }} />
-                ))}
-              </div>
-
-              <PhoneScreen {...phoneProps} chatRef={smallChatRef} />
-            </div>
-
-            {/* Navigation dots */}
-            <div style={{ display:'flex', gap:5, marginTop:14 }}>
-              {scenarios.map((_, i) => (
-                <button key={i} onClick={() => setActiveIdx(i)} style={{
-                  width: activeIdx===i ? 22 : 6, height:6, borderRadius:3, padding:0,
-                  background: activeIdx===i ? '#1d5cff' : 'rgba(255,255,255,0.15)',
-                  border:'none', cursor:'pointer', transition:'all 0.3s ease',
-                }} />
-              ))}
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div style={{ position:'absolute', bottom:24, right:'clamp(16px,4vw,40px)',
-          display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
-          <div style={{ width:1, height:36, background:'linear-gradient(to bottom,rgba(29,92,255,0.5),transparent)' }} />
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'rgba(180,200,255,0.28)',
-            letterSpacing:'0.12em', writingMode:'vertical-rl' }}>SCROLL</span>
+        {/* ══ BOTTOM HALF : the big clickable iPhone, anchored to the bottom,
+            rendered at native size (4K-crisp DOM) and scaled ≤1 — fills the
+            lower half on arrival, grows to ~fullscreen on scroll. ══════════ */}
+        <div
+          ref={phoneZoomRef}
+          onClick={() => setZoomed(true)}
+          title={tr.expand}
+          style={{ position:'absolute', left:'50%', top: zoomEnabled ? '50vh' : '6vh', zIndex:1,
+            width:'min(520px, 78vw)', aspectRatio:'310 / 660', height:'auto', cursor:'pointer',
+            transformOrigin:'top center', willChange:'transform, top', backfaceVisibility:'hidden',
+            transform: zoomEnabled ? 'translateX(-50%) translateZ(0) scale(1)' : 'translateX(-50%) scale(0.66)' }}
+        >
+          {/* Expand hint — top-right corner */}
+          <div style={{ position:'absolute', top:16, right:16, zIndex:20,
+            width:28, height:28, borderRadius:8, background:'rgba(4,8,15,0.7)',
+            backdropFilter:'blur(8px)', border:'1px solid rgba(29,92,255,0.35)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            opacity:0.65, pointerEvents:'none' }}>
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="rgba(0,207,255,0.9)" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M9 1h4v4M5 13H1V9M14 1l-5 5M1 13l5-5"/>
+            </svg>
+          </div>
+
+          {/* Titanium frame (proportional buttons so it stays right at any size) */}
+          <div style={{ position:'absolute', inset:0, borderRadius:'clamp(44px,6vh,56px)',
+            background:'linear-gradient(160deg,#2f2f2f 0%,#1a1a1a 30%,#3c3c3c 50%,#1c1c1c 70%,#2d2d2d 100%)',
+            boxShadow:'0 0 0 0.5px rgba(255,255,255,0.09) inset, 0 0 0 1px rgba(0,0,0,0.8), 0 48px 90px rgba(0,0,0,0.65), 0 0 40px rgba(29,92,255,0.18)' }}>
+            {([
+              { s:'left',  t:'15%', h:'3%',   k:'act' },
+              { s:'left',  t:'20%', h:'5.5%', k:'vp'  },
+              { s:'left',  t:'27%', h:'5.5%', k:'vm'  },
+              { s:'right', t:'23%', h:'8%',   k:'pwr' },
+            ] as const).map(b => (
+              <div key={b.k} style={{ position:'absolute', ...(b.s==='left'?{left:-3}:{right:-3}),
+                top:b.t, width:3, height:b.h,
+                borderRadius:b.s==='left'?'2px 0 0 2px':'0 2px 2px 0', background:'#2e2e2e' }} />
+            ))}
+          </div>
+
+          <PhoneScreen {...phoneProps} chatRef={smallChatRef} large />
         </div>
+
+        {/* Scroll hint (fades as you zoom in) */}
+        <div ref={hintRef} style={{ position:'absolute', bottom:'clamp(16px,4vh,34px)', left:0, right:0,
+          textAlign:'center', zIndex:2, transition:'opacity 0.15s linear', pointerEvents:'none' }}>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'rgba(180,200,255,0.45)',
+            letterSpacing:'0.14em' }}>
+            {lang === 'fr' ? 'DÉFILE POUR ZOOMER ↓' : 'SCROLL TO ZOOM ↓'}
+          </span>
+        </div>
+       </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════════════

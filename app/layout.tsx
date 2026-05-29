@@ -8,10 +8,10 @@ export const metadata: Metadata = {
     template: '%s | Copilo',
   },
   description:
-    'Copilo est l\'assistant vocal Telegram pour chauffeurs de taxi et VTC. Gérez vos courses CPAM, calculez votre CA, synchronisez votre calendrier — en push-to-talk, 100 % chiffré, hébergé en Europe.',
+    'Copilo est l\'assistant vocal Telegram pour chauffeurs de taxi et VTC. Gérez vos courses, calculez vos recettes, synchronisez votre calendrier — en push-to-talk, 100 % chiffré, hébergé en Europe.',
   keywords: [
     'assistant vocal taxi', 'VTC IA', 'Copilo', 'bot Telegram taxi',
-    'CA CPAM chauffeur', 'gestion courses taxi', 'assistant IA chauffeur',
+    'recettes chauffeur', 'gestion courses taxi', 'assistant IA chauffeur',
     'vocal push-to-talk', 'RGPD taxi', 'Telegram bot VTC',
   ],
   authors: [{ name: 'Copilo', url: 'https://copilo.tech' }],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Copilo — Assistant vocal IA pour chauffeurs taxi & VTC',
     description:
-      'Push-to-talk. Zéro écoute passive. Courses CPAM, calendrier, CA calculé automatiquement. 100 % européen, chiffré de bout en bout.',
+      'Push-to-talk. Zéro écoute passive. Courses, calendrier, recettes calculées automatiquement. 100 % européen, chiffré de bout en bout.',
     url: 'https://copilo.tech',
     siteName: 'Copilo',
     type: 'website',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Copilo — Assistant vocal IA pour chauffeurs taxi & VTC',
-    description: 'Push-to-talk. Courses CPAM, calendrier, CA auto. 100 % chiffré EU.',
+    description: 'Push-to-talk. Courses, calendrier, recettes auto. 100 % chiffré EU.',
     images: ['/og-image.png'],
     creator: '@CopiloBotFR',
   },
@@ -68,7 +68,7 @@ const jsonLd = {
       applicationCategory: 'BusinessApplication',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR', description: '3 mois gratuits' },
       description:
-        'Assistant vocal IA pour chauffeurs de taxi et VTC. Gestion des courses CPAM, calcul du CA, calendrier synchronisé, dispatch de courses en groupe Telegram.',
+        'Assistant vocal IA pour chauffeurs de taxi et VTC. Gestion des courses, calcul des recettes, calendrier synchronisé, dispatch de courses en groupe Telegram.',
     },
   ],
 }
