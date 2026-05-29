@@ -330,6 +330,13 @@ body {
   50%       { opacity: 1;   transform: translateX(-50%) scaleX(1.08); }
 }
 
+/* ── FLOATING ORBS (FacilPay coin-orbs) ─────────────────────────────── */
+@keyframes orbDrift {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33%       { transform: translateY(-18px) translateX(6px); }
+  66%       { transform: translateY(10px) translateX(-6px); }
+}
+
 /* ── FOCUS STYLES (keyboard nav) ────────────── */
 :focus-visible {
   outline: 2px solid var(--cyan);
