@@ -2,14 +2,14 @@
 
 const T = {
   fr: {
-    nav: [['#features','Fonctionnalités'],['#how','Comment ça marche'],['#demo','Démo'],['#waitlist','Accès']],
+    nav: [['#features','Fonctionnalités'],['#how','Comment ça marche'],['/simulateur','Simulateur'],['#waitlist','Accès']],
     legal: [['/mentions-legales','Mentions légales'],['/confidentialite','Confidentialité'],['#','CGU']],
     copy: '© 2026 Copilo. Conçu en France.',
     rgpd: 'Chiffrement UE · RGPD · Hébergé en Europe',
     navTitle: 'Navigation', legalTitle: 'Legal',
   },
   en: {
-    nav: [['#features','Features'],['#how','How it works'],['#demo','Demo'],['#waitlist','Access']],
+    nav: [['#features','Features'],['#how','How it works'],['/simulateur','Simulateur'],['#waitlist','Access']],
     legal: [['/mentions-legales','Legal'],['/confidentialite','Privacy'],['#','Terms']],
     copy: '© 2026 Copilo. Designed in France.',
     rgpd: 'EU Encryption · GDPR · Hosted in Europe',

@@ -37,12 +37,12 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
       ],
     },
     {
-      id: 'doublet', label: 'Doublet', icon: '👥',
+      id: 'tarif', label: 'Tarif', icon: '💶',
       messages: [
-        { role: 'u', text: 'Course 9h Nice → Cannes, M. Hajj', delay: 0 },
-        { role: 'c', text: 'Doublet possible !\n\nMme Dupont va aussi Nice → Cannes demain 09:00.\n\nFusionner ? 1 trajet · 2 clients', delay: 2000 },
-        { role: 'u', text: 'Oui, fusionner', delay: 3800 },
-        { role: 'c', text: 'Doublet #88 créé ✓\n• Mme Dupont + M. Hajj\n• 1 trajet · 2 clients\nCalendrier en orange', delay: 5600 },
+        { role: 'u', text: 'Tarif CPAM Nice → Cagnes-sur-Mer, 12 km, péage 1,70 €', delay: 0, voice: true },
+        { role: 'c', text: '💰 Estimation CA CPAM\n📍 Nice → Cagnes-sur-Mer (Alpes-Maritimes)\n📏 8 km facturables (sur 12)\n💶 1,27 €/km · 🏙️ Grande ville +15 €\n\n🧾 Course : 38,16 €\n🛣️ Péage : +1,70 €\n✅ Total : 39,86 €', delay: 1800 },
+        { role: 'u', text: 'Parfait, crée la course', delay: 3800, voice: true },
+        { role: 'c', text: 'Course créée ✓\nAjoutée au Google Calendar (en jaune)\nRappel 15 min avant', delay: 5400 },
       ],
     },
     {
@@ -83,12 +83,12 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
       ],
     },
     {
-      id: 'doublet', label: 'Shared', icon: '👥',
+      id: 'tarif', label: 'Fare', icon: '💶',
       messages: [
-        { role: 'u', text: 'Ride 9am Nice → Cannes, Mr Hajj', delay: 0 },
-        { role: 'c', text: 'Shared ride detected!\n\nMs Dupont also goes Nice → Cannes tomorrow 09:00.\n\nMerge? 1 trip · 2 clients', delay: 2000 },
-        { role: 'u', text: 'Yes merge', delay: 3800 },
-        { role: 'c', text: 'Shared #88 created ✓\n• Ms Dupont + Mr Hajj\n• 1 trip · 2 clients\nCalendar in orange', delay: 5600 },
+        { role: 'u', text: 'CPAM fare Nice → Cagnes-sur-Mer, 12 km, €1.70 toll', delay: 0, voice: true },
+        { role: 'c', text: '💰 CPAM fare estimate\n📍 Nice → Cagnes-sur-Mer (Alpes-Maritimes)\n📏 8 billable km (of 12)\n💶 €1.27/km · 🏙️ Big city +€15\n\n🧾 Ride: €38.16\n🛣️ Toll: +€1.70\n✅ Total: €39.86', delay: 1800 },
+        { role: 'u', text: 'Perfect, create the ride', delay: 3800, voice: true },
+        { role: 'c', text: 'Ride created ✓\nAdded to Google Calendar (yellow)\nReminder 15 min before', delay: 5400 },
       ],
     },
     {
@@ -116,7 +116,7 @@ const T = {
       { val: '100%',  label: 'européen'        },
     ],
     online: 'EN LIGNE',
-    ctaInChat: 'Essayer sur Telegram →',
+    ctaInChat: 'Essayez-le maintenant →',
     expand: 'Voir en plein écran',
   },
   en: {
@@ -131,7 +131,7 @@ const T = {
       { val: '100%',  label: 'European'   },
     ],
     online: 'ONLINE',
-    ctaInChat: 'Try on Telegram →',
+    ctaInChat: 'Try it now →',
     expand: 'View fullscreen',
   },
 }
@@ -307,22 +307,6 @@ function PhoneScreen({
           </div>
         )}
 
-        {showCta && !typing && (
-          <div style={{ display:'flex', justifyContent:'center', marginTop:8, animation:'msgIn 0.4s ease forwards' }}>
-            <a href="/onboard?type=bot" onClick={(e) => e.stopPropagation()} style={{
-              display:'inline-flex', alignItems:'center', gap:6,
-              padding:`${large?10:8}px ${large?20:16}px`, borderRadius:20,
-              background:'linear-gradient(135deg,#1d5cff,#00cfff)',
-              boxShadow:'0 0 20px rgba(29,92,255,0.45)',
-              color:'#fff', textDecoration:'none',
-              fontFamily:"'Barlow Condensed',sans-serif",
-              fontWeight:700, fontSize:fs(12), letterSpacing:'0.06em', textTransform:'uppercase',
-              animation:'phoneCtaPulse 2s ease-in-out infinite',
-            }}>
-              <TgIcon />{ctaInChat}
-            </a>
-          </div>
-        )}
       </div>
 
       {/* Scenario pills */}
@@ -344,26 +328,21 @@ function PhoneScreen({
         ))}
       </div>
 
-      {/* Bottom bar */}
-      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 10px',
+      {/* Bottom bar — CTA Telegram permanent */}
+      <div style={{ padding:`${large?9:7}px 10px ${large?11:9}px`,
         borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
-        <button
-          onClick={(e) => { e.stopPropagation(); window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer') }}
-          aria-label="Ouvrir Copilo sur Telegram"
-          style={{ width:fs(32), height:fs(32), borderRadius:'50%', border:'none', flexShrink:0,
-            background:'linear-gradient(135deg,#1d5cff,#00cfff)',
-            boxShadow: typing ? '0 0 22px rgba(29,92,255,0.75)' : '0 0 14px rgba(29,92,255,0.45)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            cursor:'pointer', transition:'box-shadow 0.3s' }}>
-          <MicIcon />
-        </button>
-        <div style={{ flex:1, height:30, borderRadius:15,
-          background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)',
-          display:'flex', alignItems:'center', paddingLeft:11 }}>
-          <span style={{ fontFamily:"'Barlow',sans-serif", fontSize:fs(10), color:'rgba(255,255,255,0.2)' }}>
-            Message…
-          </span>
-        </div>
+        <a
+          href="https://t.me/Copilo_TaxiBot"
+          target="_blank" rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:fs(7),
+            padding:`${large?11:9}px ${large?18:14}px`, borderRadius:fs(22),
+            background:'linear-gradient(135deg,#1d5cff,#00cfff)', boxShadow:'0 0 20px rgba(29,92,255,0.45)',
+            color:'#fff', textDecoration:'none', fontFamily:"'Barlow Condensed',sans-serif",
+            fontWeight:700, fontSize:fs(12.5), letterSpacing:'0.06em', textTransform:'uppercase',
+            animation:'phoneCtaPulse 2s ease-in-out infinite' }}>
+          <TgIcon /> {ctaInChat}
+        </a>
       </div>
     </div>
   )
