@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 function CheckCircleIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
       <circle cx="12" cy="12" r="10" />
       <polyline points="9 12 11 14 15 10" />
     </svg>
@@ -12,7 +12,7 @@ function CheckCircleIcon() {
 
 function PersonIcon({ color }: { color: string }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill={color} stroke="none">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={color} stroke="none" aria-hidden="true">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </svg>
@@ -32,7 +32,8 @@ const T = {
     profiles: ['Taxi', 'VTC'],
     pl: 'Tu es :',
     privacy: 'Pas de spam. RGPD. Désinscription en un clic.',
-    count: '+240 pros déjà inscrits',
+    count: 'pros déjà inscrits',
+    emailLabel: 'Adresse e-mail',
   },
   en: {
     label: '// EARLY ACCESS',
@@ -44,7 +45,8 @@ const T = {
     profiles: ['Taxi', 'VTC'],
     pl: 'You are:',
     privacy: 'No spam. GDPR. Unsubscribe in one click.',
-    count: '+240 pros already signed up',
+    count: 'pros already signed up',
+    emailLabel: 'Email address',
   },
 }
 
@@ -54,14 +56,25 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
   const [profile, setProfile] = useState('')
   const [done, setDone] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
     setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
-    setDone(true)
-    setLoading(false)
+    setError('')
+    try {
+      await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, profile }),
+      })
+      setDone(true)
+    } catch {
+      setError(lang === 'fr' ? 'Erreur réseau — réessaie.' : 'Network error — please retry.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -74,7 +87,27 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
         <h2 className="display" style={{ fontSize: 'clamp(40px,6vw,72px)', color: '#f0f4ff', marginBottom: 16, whiteSpace: 'pre-line' }}>
           {tr.title}
         </h2>
-        <p style={{ fontSize: 16, color: 'rgba(180,200,255,0.5)', marginBottom: 40 }}>{tr.sub}</p>
+        <p style={{ fontSize: 16, color: 'rgba(180,200,255,0.6)', marginBottom: 28 }}>{tr.sub}</p>
+
+        {/* ── Social proof ABOVE the form (#9) ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+          <div style={{ display: 'flex' }}>
+            {AVATAR_COLORS.map((color, i) => (
+              <div key={i} style={{
+                width: 30, height: 30, borderRadius: '50%',
+                background: `${color}22`,
+                border: '2px solid rgba(4,8,15,1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginLeft: i > 0 ? -8 : 0,
+              }}>
+                <PersonIcon color={color} />
+              </div>
+            ))}
+          </div>
+          <span className="mono" style={{ fontSize: 12, color: 'rgba(180,200,255,0.5)' }}>
+            <span style={{ color: '#f0f4ff', fontWeight: 500 }}>+240</span>{' '}{tr.count}
+          </span>
+        </div>
 
         {done ? (
           <div style={{
@@ -111,34 +144,46 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
               </div>
             </div>
 
-            {/* Email + submit */}
-            <div style={{ display: 'flex', gap: 12 }}>
-              <input
-                type="email" required value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder={tr.ph}
-                style={{
-                  flex: 1, padding: '14px 18px', borderRadius: 12,
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f0f4ff', fontSize: 15, outline: 'none',
-                  fontFamily: "'Barlow', sans-serif",
-                  transition: 'border-color 0.2s',
-                }}
-                onFocus={e => (e.target.style.borderColor = 'rgba(29,92,255,0.5)')}
-                onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
-              />
-              <button type="submit" disabled={loading} className="btn-primary"
-                style={{
-                  padding: '14px 28px', borderRadius: 12,
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700, fontSize: 17, letterSpacing: '0.06em',
-                  textTransform: 'uppercase', color: '#fff', cursor: 'pointer',
-                  border: 'none', flexShrink: 0,
-                  opacity: loading ? 0.7 : 1,
-                }}>
-                {loading ? '...' : tr.cta}
-              </button>
+            {/* Email + submit (#8 — label accessible) */}
+            <div>
+              <label htmlFor="waitlist-email" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>
+                {tr.emailLabel}
+              </label>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <input
+                  id="waitlist-email"
+                  type="email" required value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder={tr.ph}
+                  autoComplete="email"
+                  style={{
+                    flex: 1, padding: '14px 18px', borderRadius: 12,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#f0f4ff', fontSize: 15, outline: 'none',
+                    fontFamily: "'Barlow', sans-serif",
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={e => (e.target.style.borderColor = 'rgba(29,92,255,0.5)')}
+                  onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
+                />
+                <button type="submit" disabled={loading} className="btn-primary"
+                  style={{
+                    padding: '14px 28px', borderRadius: 12,
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 700, fontSize: 17, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', color: '#fff', cursor: 'pointer',
+                    border: 'none', flexShrink: 0,
+                    opacity: loading ? 0.7 : 1,
+                  }}>
+                  {loading ? '...' : tr.cta}
+                </button>
+              </div>
+              {error && (
+                <p role="alert" style={{ color: '#ef4444', fontSize: 12, marginTop: 6, fontFamily: "'DM Mono', monospace" }}>
+                  {error}
+                </p>
+              )}
             </div>
 
             <p className="mono" style={{ fontSize: 11, color: 'rgba(180,200,255,0.3)', letterSpacing: '0.04em' }}>
@@ -153,42 +198,15 @@ export default function Waitlist({ lang }: { lang: 'fr' | 'en' }) {
             href="/onboard"
             className="btn-primary"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '14px 28px',
-              borderRadius: 12,
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 28px', borderRadius: 12,
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: 17,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: '#fff',
-              textDecoration: 'none',
+              fontWeight: 700, fontSize: 17, letterSpacing: '0.06em',
+              textTransform: 'uppercase', color: '#fff', textDecoration: 'none',
             }}
           >
             {lang === 'fr' ? 'Créer mon Copilo →' : 'Create my Copilo →'}
           </a>
-        </div>
-
-        {/* Social proof */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 36 }}>
-          <div style={{ display: 'flex' }}>
-            {AVATAR_COLORS.map((color, i) => (
-              <div key={i} style={{
-                width: 30, height: 30, borderRadius: '50%',
-                background: `${color}22`,
-                border: '2px solid rgba(4,8,15,1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginLeft: i > 0 ? -8 : 0,
-              }}>
-                <PersonIcon color={color} />
-              </div>
-            ))}
-          </div>
-          <span className="mono" style={{ fontSize: 12, color: 'rgba(180,200,255,0.4)' }}>
-            <span style={{ color: '#f0f4ff', fontWeight: 500 }}>+240</span> {tr.count.replace('+240 ','').replace('+240 pros ','pros ')}
-          </span>
         </div>
       </div>
     </section>

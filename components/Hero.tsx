@@ -314,6 +314,7 @@ function PhoneScreen({
         borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(4,8,15,0.95)', flexShrink:0 }}>
         <button
           onClick={() => window.open('https://t.me/Copilo_TaxiBot', '_blank', 'noopener,noreferrer')}
+          aria-label="Ouvrir Copilo sur Telegram"
           style={{ width:fs(32), height:fs(32), borderRadius:'50%', border:'none', flexShrink:0,
             background:'linear-gradient(135deg,#1d5cff,#00cfff)',
             boxShadow: typing ? '0 0 22px rgba(29,92,255,0.75)' : '0 0 14px rgba(29,92,255,0.45)',
@@ -445,7 +446,7 @@ export default function Hero({ lang }: { lang: Lang }) {
               </span>
             </h1>
             <p style={{ fontSize:15, color:'rgba(180,200,255,0.55)', lineHeight:1.75,
-              fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32 }}>{tr.sub}</p>
+              fontFamily:"'Barlow',sans-serif", maxWidth:400, marginBottom:32, color:'rgba(180,200,255,0.78)' }}>{tr.sub}</p>
             <div style={{ display:'flex', gap:28, marginBottom:40, flexWrap:'wrap' }}>
               {tr.metrics.map(m => (
                 <div key={m.label}>
