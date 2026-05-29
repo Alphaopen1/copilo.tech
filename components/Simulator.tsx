@@ -40,16 +40,23 @@ function Toggle({ checked, onChange, children }: { checked: boolean; onChange: (
 
 export default function Simulator() {
   const [deptCode, setDeptCode] = useState('06')
-  const [km, setKm] = useState(12)
+  const [kmStr, setKmStr] = useState('12')
   const [grandeVille, setGrandeVille] = useState(false)
   const [hospVide, setHospVide] = useState(false)
   const [nuitWeekendFerie, setNuit] = useState(false)
   const [patients, setPatients] = useState(1)
   const [tpmr, setTpmr] = useState(false)
-  const [peagesEur, setPeages] = useState(0)
+  const [peagesStr, setPeagesStr] = useState('0')
+
+  // Champs texte → nombre (accepte « 3.70 » et « 3,70 »)
+  const num = (s: string) => { const n = parseFloat(s.replace(',', '.')); return Number.isFinite(n) && n > 0 ? n : 0 }
+  const km = num(kmStr)
+  const peagesEur = num(peagesStr)
 
   const input: SimInput = { deptCode, km, grandeVille, hospVide, nuitWeekendFerie, patients, tpmr, peagesEur }
   const result = useMemo(() => computeTarif(input), [deptCode, km, grandeVille, hospVide, nuitWeekendFerie, patients, tpmr, peagesEur])
+  // Recette chauffeur = somme des factures patients (chaque patient = result.total)
+  const driverTotal = Math.round(result.total * patients * 100) / 100
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 24 }}>
@@ -68,8 +75,8 @@ export default function Simulator() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
             <label style={label}>Distance en charge (km)</label>
-            <input aria-label="Distance en charge en kilomètres" type="number" min={0} step={1} value={km}
-              onChange={e => setKm(Math.max(0, Number(e.target.value) || 0))} style={field} />
+            <input aria-label="Distance en charge en kilomètres" type="text" inputMode="decimal" value={kmStr}
+              onChange={e => setKmStr(e.target.value)} style={field} />
           </div>
           <div>
             <label style={label}>Patients (partagé)</label>
@@ -79,11 +86,15 @@ export default function Simulator() {
           </div>
         </div>
 
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(180,200,255,0.45)', margin: '-4px 0 0' }}>
+          Les 4 premiers km sont inclus dans le forfait de prise en charge (convention 2025) — seuls les km au-delà sont facturés au tarif kilométrique.
+        </p>
+
         {/* Péages */}
         <div>
           <label style={label}>Frais de péage (€)</label>
-          <input aria-label="Frais de péage en euros" type="number" min={0} step={0.1} value={peagesEur}
-            onChange={e => setPeages(Math.max(0, Number(e.target.value) || 0))} style={field} />
+          <input aria-label="Frais de péage en euros" type="text" inputMode="decimal" value={peagesStr}
+            onChange={e => setPeagesStr(e.target.value)} placeholder="ex : 3.70" style={field} />
         </div>
 
         {/* Options */}
@@ -114,15 +125,16 @@ export default function Simulator() {
         </div>
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 22, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#f0f4ff' }}>
-            Total estimé
+            {patients > 1 ? `Recette course (${patients} pat.)` : 'Total estimé'}
           </span>
           <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 40, color: '#00cfff', lineHeight: 1 }}>
-            {result.total.toFixed(2)} €
+            {(patients > 1 ? driverTotal : result.total).toFixed(2)} €
           </span>
         </div>
         {patients > 1 && (
-          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(180,200,255,0.45)', marginTop: 10 }}>
-            Facture par patient (transport partagé). Une facture distincte est établie pour chaque patient.
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(180,200,255,0.5)', marginTop: 10 }}>
+            soit <strong style={{ color: '#f0f4ff' }}>{result.total.toFixed(2)} € par patient</strong> × {patients} (facture distincte par patient).
+            Le transport partagé augmente ta recette par course malgré l&apos;abattement.
           </p>
         )}
 
