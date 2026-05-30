@@ -1,60 +1,14 @@
 'use client'
-import type { ReactNode } from 'react'
+import { Mic, ShieldCheck, CalendarDays, Euro, Users, BrainCircuit, type LucideIcon } from 'lucide-react'
 
-/* ── SVG Icons ────────────────────────────────────────────────────── */
-function MicIcon({ color }: { color: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-      <line x1="12" x2="12" y1="19" y2="22"/>
-    </svg>
-  )
-}
-function LockIcon({ color }: { color: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-  )
-}
-function CalendarIcon({ color }: { color: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-  )
-}
-function EuroIcon({ color }: { color: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.5 6.5a7 7 0 1 0 0 11"/>
-      <path d="M3.5 10h8"/>
-      <path d="M3.5 14h8"/>
-    </svg>
-  )
-}
-function UsersIcon({ color }: { color: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  )
-}
-function CircuitIcon({ color }: { color: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="6" height="6" rx="1"/>
-      <path d="M9 3h6M9 21h6M3 9v6M21 9v6M3 12H1M23 12h-2M12 3V1M12 23v-2"/>
-    </svg>
-  )
+/* ── Icônes Lucide (jeu cohérent, trait fin arrondi) ──────────────── */
+const ICONS: Record<string, LucideIcon> = {
+  mic:      Mic,           // assistant vocal & appels
+  lock:     ShieldCheck,   // chiffrement / sécurité
+  calendar: CalendarDays,  // Google Calendar
+  euro:     Euro,          // recettes
+  users:    Users,         // doublets
+  circuit:  BrainCircuit,  // mémoire adaptative
 }
 
 /* ── Data ──────────────────────────────────────────────────────────── */
@@ -95,15 +49,9 @@ const T: { fr: { label: string; title: string; sub: string; items: Feature[] }; 
   },
 }
 
-function FeatureIcon({ iconKey, color }: { iconKey: Feature['iconKey']; color: string }): ReactNode {
-  switch (iconKey) {
-    case 'mic':      return <MicIcon color={color} />
-    case 'lock':     return <LockIcon color={color} />
-    case 'calendar': return <CalendarIcon color={color} />
-    case 'euro':     return <EuroIcon color={color} />
-    case 'users':    return <UsersIcon color={color} />
-    case 'circuit':  return <CircuitIcon color={color} />
-  }
+function FeatureIcon({ iconKey, color }: { iconKey: Feature['iconKey']; color: string }) {
+  const Icon = ICONS[iconKey] ?? Mic
+  return <Icon size={22} color={color} strokeWidth={1.8} aria-hidden />
 }
 
 export default function Features({ lang }: { lang: 'fr' | 'en' }) {

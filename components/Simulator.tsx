@@ -1,5 +1,6 @@
 'use client'
 import { useMemo, useState } from 'react'
+import { Check } from 'lucide-react'
 import { DEPARTEMENTS, computeTarif, type SimInput } from '@/lib/tarifs-cpam-2025'
 
 const field: React.CSSProperties = {
@@ -30,7 +31,7 @@ function Toggle({ checked, onChange, children }: { checked: boolean; onChange: (
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {checked && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <Check size={13} color="#fff" strokeWidth={3} aria-hidden />
         )}
       </span>
       {children}

@@ -1,36 +1,16 @@
 'use client'
 import { useState } from 'react'
+import { Bot, Users, ShieldCheck } from 'lucide-react'
 
-/* ── SVG icons ── */
+/* ── Icônes Lucide (alias pour conserver les usages existants) ── */
 function IconBot({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <path d="M9 11V9a3 3 0 016 0v2" />
-      <circle cx="9" cy="16" r="1" fill="currentColor" stroke="none" />
-      <circle cx="15" cy="16" r="1" fill="currentColor" stroke="none" />
-      <path d="M12 2v3M8 2h8" />
-    </svg>
-  )
+  return <Bot size={size} strokeWidth={1.6} aria-hidden />
 }
-
 function IconGroup({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  )
+  return <Users size={size} strokeWidth={1.6} aria-hidden />
 }
-
 function IconAdmin({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L4 5.5V11c0 5.25 3.4 10.15 8 11.5 4.6-1.35 8-6.25 8-11.5V5.5L12 2z" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  )
+  return <ShieldCheck size={size} strokeWidth={1.6} aria-hidden />
 }
 
 const T = {
