@@ -8,10 +8,22 @@ import Footer from '@/components/Footer'
 
 const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || ''
 
-/* ── HCaptchaWidget — rend explicitement via window.hcaptcha.render() ────
-   Le rendu déclaratif `<div class="h-captcha">` ne marche qu'au premier
-   chargement du script. Quand React démonte/remonte le widget (bascule
-   entre cartes), il faut appeler render() à la main. */
+/* ── HCaptchaWidget — render explicite + retry tant que le script charge.
+   Le rendu déclaratif <div class="h-captcha"> ne déclenche l'auto-render
+   qu'UNE FOIS au load. Quand React remonte le widget (bascule de carte),
+   il faut appeler render() manuellement. */
+
+type HCaptchaApi = {
+  render?: (el: HTMLElement, opts: Record<string, unknown>) => number
+  remove?: (id: number) => void
+  reset?: (id: number) => void
+}
+
+function getHcaptcha(): HCaptchaApi | null {
+  const w = window as unknown as { hcaptcha?: HCaptchaApi }
+  return w.hcaptcha?.render ? w.hcaptcha : null
+}
+
 function HCaptchaWidget() {
   const ref = useRef<HTMLDivElement>(null)
   const widgetId = useRef<number | null>(null)
@@ -19,21 +31,12 @@ function HCaptchaWidget() {
   useEffect(() => {
     if (!ref.current || !HCAPTCHA_SITEKEY) return
     const node = ref.current
+    let cancelled = false
+    let intervalId: ReturnType<typeof setInterval> | null = null
 
-    let attempts = 0
-    const tryRender = () => {
-      const hc = (window as unknown as { hcaptcha?: {
-        render?: (el: HTMLElement, opts: Record<string, unknown>) => number
-        reset?: (id: number) => void
-        remove?: (id: number) => void
-      } }).hcaptcha
-
-      if (!hc?.render) {
-        if (attempts++ < 50) setTimeout(tryRender, 100)
-        return
-      }
-      // Si déjà rendu sur ce node, ne pas re-render
-      if (node.hasChildNodes()) return
+    const doRender = () => {
+      const hc = getHcaptcha()
+      if (!hc?.render || cancelled || widgetId.current !== null) return
       try {
         widgetId.current = hc.render(node, {
           sitekey: HCAPTCHA_SITEKEY,
@@ -41,17 +44,29 @@ function HCaptchaWidget() {
           callback: 'onHCaptchaSuccess',
           'expired-callback': 'onHCaptchaExpired',
         })
-      } catch {
-        /* déjà rendu, ignorer */
+        if (intervalId) { clearInterval(intervalId); intervalId = null }
+      } catch (err) {
+        console.warn('[hCaptcha] render failed', err)
       }
     }
-    tryRender()
+
+    // Tente immédiatement, puis poll toutes les 200ms jusqu'à 10s
+    doRender()
+    if (widgetId.current === null) {
+      intervalId = setInterval(doRender, 200)
+      setTimeout(() => {
+        if (intervalId) { clearInterval(intervalId); intervalId = null }
+      }, 10000)
+    }
 
     return () => {
-      const hc = (window as unknown as { hcaptcha?: { remove?: (id: number) => void } }).hcaptcha
+      cancelled = true
+      if (intervalId) clearInterval(intervalId)
+      const hc = getHcaptcha()
       if (hc?.remove && widgetId.current !== null) {
         try { hc.remove(widgetId.current) } catch {}
       }
+      widgetId.current = null
     }
   }, [])
 
