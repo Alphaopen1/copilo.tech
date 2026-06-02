@@ -145,7 +145,7 @@ function Field({ label, error, hint, children }: {
 
 /* ── Card config ────────────────────────────────────────────────────── */
 const CARDS: { id: CardId; color: string; glow: string; title: string; sub: string }[] = [
-  { id: 'bot',   color: '#60a5fa', glow: 'rgba(96,165,250,0.18)',   title: 'Mon Copilo perso',  sub: 'Bot @Copilo_de_PRENOM dédié à toi' },
+  { id: 'bot',   color: '#60a5fa', glow: 'rgba(96,165,250,0.18)',   title: 'Mon assistant Copilo',  sub: 'Configure ton @Copilo_TaxiBot' },
   { id: 'group', color: '#a78bfa', glow: 'rgba(167,139,250,0.18)',  title: 'Groupe / Canal',     sub: 'Dispatch dans ton groupe Telegram' },
   { id: 'admin', color: '#34d399', glow: 'rgba(52,211,153,0.18)',   title: 'Rejoindre en admin', sub: 'Invite Copilo dans un groupe existant' },
 ]
@@ -198,27 +198,20 @@ export default function OnboardPage() {
   const [adminResult, setAdminResult]   = useState<{ steps?: string[]; addBotUrl?: string } | null>(null)
   const [adminApiError] = useState(false)
 
-  /* ── Derived bot name ────────────────────────────────────────────── */
-  const safeFirst = sanitizeSlug(bot.firstName)
-  const safeAlias = sanitizeSlug(bot.alias)
-  const botName   = `Copilo_de_${safeFirst || 'PRENOM'}${safeAlias ? '_' + safeAlias : ''}`
-  const nameTooLong = botName.replace('PRENOM', safeFirst || '').length > 32
-
   /* ── Submits ─────────────────────────────────────────────────────── */
   const submitBot = (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Partial<BotForm> = {}
     if (bot.firstName.trim().length < 2) errs.firstName = 'Prénom requis (min. 2 caractères)'
     if (!validatePhone(bot.phone))        errs.phone     = 'Format invalide — ex: +33 6 12 34 56 78'
-    if (nameTooLong)                      errs.alias     = `Nom trop long (${botName.length} > 32 caractères) — raccourcis l'alias`
     if (Object.keys(errs).length) { setBotErrs(errs); return }
     setBotErrs({})
     setBotLoading(true)
     const payload = btoa(`${bot.firstName.trim()}|${bot.phone.replace(/[\s\-]/g, '')}`).slice(0, 60).replace(/=/g, '')
     setBotResult({
-      name:        botName.replace('PRENOM', safeFirst),
+      name:        'Copilo_TaxiBot',
       telegramUrl: `https://t.me/Copilo_TaxiBot?start=setup_${payload}`,
-      message:     `Ouvre Telegram — @Copilo_TaxiBot va configurer ton bot @${botName.replace('PRENOM', safeFirst)} en 2 minutes.`,
+      message:     `Ton profil Copilo est prêt ! Ouvre @Copilo_TaxiBot sur Telegram pour finaliser.`,
     })
     setBotLoading(false)
   }
@@ -384,22 +377,22 @@ export default function OnboardPage() {
             {selected === 'bot' && (
               <div style={{ padding:'36px 32px', borderRadius:20, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
 
-                {/* Live name preview */}
+                {/* Header */}
                 <div style={{ fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:8, display:'flex', alignItems:'center', gap:6 }}>
-                  <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Bot personnel
+                  <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Ton assistant personnel
                 </div>
-                <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:26, color: nameTooLong ? '#ef4444' : '#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:4, wordBreak:'break-all' }}>
-                  @{botName}
+                <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:26, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:4 }}>
+                  @Copilo_TaxiBot
                 </h2>
-                <div style={{ fontFamily:"'DM Mono', monospace", fontSize:10, color: nameTooLong ? 'rgba(239,68,68,0.7)' : 'rgba(180,200,255,0.25)', marginBottom:24, letterSpacing:'0.04em' }}>
-                  {botName.replace('PRENOM', safeFirst || 'PRENOM').length} / 32 caractères
+                <div style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.5)', marginBottom:24, lineHeight:1.5 }}>
+                  Un seul bot, personnalisé pour toi — il reconnaît ton profil dès la première connexion.
                 </div>
 
                 {botResult ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:12, padding:'20px 24px', borderRadius:14, background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.3)', color:'#34d399', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, letterSpacing:'0.03em' }}>
                       <CheckCircleIcon size={22} />
-                      @{botResult.name} est prêt !
+                      Profil créé — @Copilo_TaxiBot t&apos;attend !
                     </div>
                     {botResult.message && (
                       <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:14, color:'rgba(180,200,255,0.6)', lineHeight:1.6, margin:0 }}>{botResult.message}</p>
@@ -413,26 +406,6 @@ export default function OnboardPage() {
 
                     <Field label="Ton prénom" error={botErrs.firstName}>
                       <input type="text" value={bot.firstName} onChange={e=>setBot(p=>({...p,firstName:e.target.value}))} placeholder="Marc" style={botErrs.firstName?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.firstName?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
-                    </Field>
-
-                    <Field
-                      label="Identifiant taxi (optionnel)"
-                      error={botErrs.alias}
-                      hint={safeAlias ? `→ @Copilo_de_${safeFirst||'PRENOM'}_${safeAlias}` : 'Ex: Taxi Nice 555 → @Copilo_de_Marc_Taxi_Nice_555'}
-                    >
-                      <div style={{ position:'relative' }}>
-                        <div style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
-                          <TagIcon color="rgba(0,207,255,0.4)" />
-                        </div>
-                        <input
-                          type="text" value={bot.alias}
-                          onChange={e=>setBot(p=>({...p,alias:e.target.value}))}
-                          placeholder="Taxi Nice 555"
-                          style={{ ...(botErrs.alias?fieldError:fieldBase), paddingLeft:36 }}
-                          onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}}
-                          onBlur={e=>{e.target.style.borderColor=botErrs.alias?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}}
-                        />
-                      </div>
                     </Field>
 
                     <Field label="Numéro Telegram" error={botErrs.phone}>
