@@ -1,9 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Script from 'next/script'
 import Nav from '@/components/Nav'
 import VideoBanner from '@/components/VideoBanner'
 import Footer from '@/components/Footer'
+
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || ''
 
 /* ── SVG icons ──────────────────────────────────────────────────────── */
 function BotIcon({ color = '#60a5fa', size = 28 }: { color?: string; size?: number }) {
@@ -167,6 +170,26 @@ export default function OnboardPage() {
   const [selected, setSelected] = useState<CardId | null>(null)
   const [fromUrl, setFromUrl] = useState(false)
 
+  /* ── hCaptcha (partagé entre les 3 formulaires) ───────────────────── */
+  const [captchaToken, setCaptchaToken] = useState<string>('')
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<string>
+      setCaptchaToken(ce.detail)
+    }
+    window.addEventListener('hcaptcha-token', handler)
+    return () => window.removeEventListener('hcaptcha-token', handler)
+  }, [])
+
+  /* Reset captcha quand on change de carte */
+  useEffect(() => {
+    setCaptchaToken('')
+    if (typeof window !== 'undefined' && (window as unknown as { hcaptcha?: { reset?: () => void } }).hcaptcha?.reset) {
+      try { (window as unknown as { hcaptcha: { reset: () => void } }).hcaptcha.reset() } catch {}
+    }
+  }, [selected])
+
   /* Auto-select type from URL ?type=bot|group|admin */
   useEffect(() => {
     const t = searchParams.get('type') as CardId | null
@@ -204,6 +227,7 @@ export default function OnboardPage() {
     const errs: Partial<BotForm> = {}
     if (bot.firstName.trim().length < 2) errs.firstName = 'Prénom requis (min. 2 caractères)'
     if (!validatePhone(bot.phone))        errs.phone     = 'Format invalide — ex: +33 6 12 34 56 78'
+    if (!captchaToken)                    errs.firstName = errs.firstName || 'Coche le captcha avant de valider'
     if (Object.keys(errs).length) { setBotErrs(errs); return }
     setBotErrs({})
     setBotLoading(true)
@@ -220,6 +244,7 @@ export default function OnboardPage() {
     e.preventDefault()
     const errs: Partial<GroupForm> = {}
     if (group.groupName.trim().length < 3) errs.groupName = 'Nom requis (min. 3 caractères)'
+    if (!captchaToken)                     errs.groupName = errs.groupName || 'Coche le captcha avant de valider'
     if (Object.keys(errs).length) { setGroupErrs(errs); return }
     setGroupErrs({})
     setGroupLoading(true)
@@ -233,6 +258,7 @@ export default function OnboardPage() {
     e.preventDefault()
     const errs: Partial<AdminForm> = {}
     if (!admin.groupHandle.trim()) errs.groupHandle = 'Renseigne le username ou lien du groupe'
+    if (!captchaToken)              errs.groupHandle = errs.groupHandle || 'Coche le captcha avant de valider'
     if (Object.keys(errs).length) { setAdminErrs(errs); return }
     setAdminErrs({})
     setAdminLoading(true)
@@ -284,6 +310,23 @@ export default function OnboardPage() {
   ═══════════════════════════════════════════════════════════════════ */
   return (
     <>
+      {/* hCaptcha script (chargé une fois pour tous les formulaires) */}
+      <Script
+        src="https://js.hcaptcha.com/1/api.js"
+        async defer
+        strategy="afterInteractive"
+      />
+      <Script id="hcaptcha-callback-onboard" strategy="afterInteractive">{`
+        window.onHCaptchaSuccess = function(token) {
+          window.__hcaptchaToken = token;
+          window.dispatchEvent(new CustomEvent('hcaptcha-token', { detail: token }));
+        };
+        window.onHCaptchaExpired = function() {
+          window.__hcaptchaToken = '';
+          window.dispatchEvent(new CustomEvent('hcaptcha-token', { detail: '' }));
+        };
+      `}</Script>
+
       {/* Fixed stars background (FacilPay-style deep-space atmosphere) */}
       <div className="stars-bg" />
 
@@ -440,6 +483,17 @@ export default function OnboardPage() {
                       <input type="tel" value={bot.phone} onChange={e=>setBot(p=>({...p,phone:e.target.value}))} placeholder="+33 6 12 34 56 78" style={botErrs.phone?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.phone?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
                     </Field>
 
+                    {HCAPTCHA_SITEKEY && (
+                      <div
+                        className="h-captcha"
+                        data-sitekey={HCAPTCHA_SITEKEY}
+                        data-theme="dark"
+                        data-callback="onHCaptchaSuccess"
+                        data-expired-callback="onHCaptchaExpired"
+                        style={{ marginTop: 4 }}
+                      />
+                    )}
+
                     <button type="submit" disabled={botLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:botLoading?'not-allowed':'pointer', opacity:botLoading?0.7:1 }}>
                       {botLoading ? 'Enregistrement…' : 'Créer mon profil →'}
                     </button>
@@ -488,6 +542,17 @@ export default function OnboardPage() {
                     <Field label="Description (optionnel)">
                       <textarea value={group.description} onChange={e=>setGroup(p=>({...p,description:e.target.value}))} placeholder="Ex: Groupe de coordination pour les taxis de Nice" rows={3} style={{ ...fieldBase, resize:'vertical', minHeight:80 }} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.09)'}} />
                     </Field>
+
+                    {HCAPTCHA_SITEKEY && (
+                      <div
+                        className="h-captcha"
+                        data-sitekey={HCAPTCHA_SITEKEY}
+                        data-theme="dark"
+                        data-callback="onHCaptchaSuccess"
+                        data-expired-callback="onHCaptchaExpired"
+                        style={{ marginTop: 4 }}
+                      />
+                    )}
 
                     <button type="submit" disabled={groupLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:groupLoading?'not-allowed':'pointer', opacity:groupLoading?0.7:1 }}>
                       {groupLoading ? 'Création…' : 'Configurer le groupe →'}
@@ -539,6 +604,17 @@ export default function OnboardPage() {
                         ))}
                       </ol>
                     </div>
+
+                    {HCAPTCHA_SITEKEY && (
+                      <div
+                        className="h-captcha"
+                        data-sitekey={HCAPTCHA_SITEKEY}
+                        data-theme="dark"
+                        data-callback="onHCaptchaSuccess"
+                        data-expired-callback="onHCaptchaExpired"
+                        style={{ marginTop: 4 }}
+                      />
+                    )}
 
                     <button type="submit" disabled={adminLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:adminLoading?'not-allowed':'pointer', opacity:adminLoading?0.7:1 }}>
                       {adminLoading ? 'Vérification…' : "J'ai ajouté Copilo →"}
