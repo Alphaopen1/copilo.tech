@@ -145,9 +145,9 @@ function Field({ label, error, hint, children }: {
 
 /* ── Card config ────────────────────────────────────────────────────── */
 const CARDS: { id: CardId; color: string; glow: string; title: string; sub: string }[] = [
-  { id: 'bot',   color: '#60a5fa', glow: 'rgba(96,165,250,0.18)',   title: 'Démarrer avec Copilo',  sub: 'Indique-moi ton nom et ton numéro' },
-  { id: 'group', color: '#a78bfa', glow: 'rgba(167,139,250,0.18)',  title: 'Groupe / Canal',     sub: 'Dispatch dans ton groupe Telegram' },
-  { id: 'admin', color: '#34d399', glow: 'rgba(52,211,153,0.18)',   title: 'Rejoindre en admin', sub: 'Invite Copilo dans un groupe existant' },
+  { id: 'bot',   color: '#60a5fa', glow: 'rgba(96,165,250,0.18)',   title: 'Démarrer avec Copilo',  sub: 'Indique ton nom + numéro, puis ouvre @Copilo_TaxiBot — 30 secondes.' },
+  { id: 'group', color: '#a78bfa', glow: 'rgba(167,139,250,0.18)',  title: 'Groupe / Canal',     sub: 'Crée un groupe Telegram pour dispatcher tes courses entre confrères.' },
+  { id: 'admin', color: '#34d399', glow: 'rgba(52,211,153,0.18)',   title: 'Rejoindre en admin', sub: 'Tu as déjà un groupe ? Invite @Copilo_TaxiBot comme administrateur.' },
 ]
 
 function CardIcon({ id, color, size = 28 }: { id: CardId; color: string; size?: number }) {
@@ -315,30 +315,58 @@ export default function OnboardPage() {
           )}
         </div>
 
-        {/* ── Type switcher tabs (compact, always visible once selected) */}
+        {/* ── Type switcher tabs (3 mini-cartes avec explications) ───── */}
         {selected && (
-          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:36, flexWrap:'wrap' }}>
+          <div style={{ marginBottom:36 }}>
             {/* Back button */}
             <button
               onClick={handleBack}
-              style={{ display:'flex', alignItems:'center', gap:4, padding:'7px 12px', borderRadius:10, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.03)', color:'rgba(180,200,255,0.5)', fontFamily:"'Barlow Condensed', sans-serif", fontSize:13, letterSpacing:'0.04em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.15s' }}
+              style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'7px 12px', borderRadius:10, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.03)', color:'rgba(180,200,255,0.5)', fontFamily:"'Barlow Condensed', sans-serif", fontSize:13, letterSpacing:'0.04em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.15s', marginBottom:16 }}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.2)';e.currentTarget.style.color='#f0f4ff'}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.color='rgba(180,200,255,0.5)'}}
             >
               <ChevronLeftIcon color="currentColor" /> Changer
             </button>
 
-            {/* Type tabs */}
-            {CARDS.map(c => (
-              <button
-                key={c.id}
-                onClick={() => handleSelectCard(c.id)}
-                style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:10, cursor:'pointer', transition:'all 0.15s', fontFamily:"'Barlow Condensed', sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase', border: selected===c.id ? `1px solid ${c.color}55` : '1px solid rgba(255,255,255,0.08)', background: selected===c.id ? `${c.color}18` : 'rgba(255,255,255,0.02)', color: selected===c.id ? c.color : 'rgba(180,200,255,0.4)' }}
-              >
-                <CardIcon id={c.id} color={selected===c.id ? c.color : 'rgba(180,200,255,0.3)'} size={14} />
-                {c.title}
-              </button>
-            ))}
+            {/* Type tabs — 3 mini-cartes avec titre + explication */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:10 }}>
+              {CARDS.map(c => {
+                const isActive = selected === c.id
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => handleSelectCard(c.id)}
+                    style={{
+                      display:'flex', flexDirection:'column', alignItems:'flex-start', gap:6,
+                      padding:'14px 16px', borderRadius:12, cursor:'pointer', transition:'all 0.15s',
+                      textAlign:'left',
+                      border: isActive ? `1px solid ${c.color}66` : '1px solid rgba(255,255,255,0.08)',
+                      background: isActive ? `${c.color}18` : 'rgba(255,255,255,0.02)',
+                      boxShadow: isActive ? `0 0 24px ${c.glow}` : 'none',
+                    }}
+                    onMouseEnter={e=>{ if(!isActive){ e.currentTarget.style.borderColor=`${c.color}33`; e.currentTarget.style.background=`${c.color}08` } }}
+                    onMouseLeave={e=>{ if(!isActive){ e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.background='rgba(255,255,255,0.02)' } }}
+                  >
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <CardIcon id={c.id} color={isActive ? c.color : 'rgba(180,200,255,0.5)'} size={16} />
+                      <span style={{
+                        fontFamily:"'Barlow Condensed', sans-serif", fontSize:14, fontWeight:700,
+                        letterSpacing:'0.04em', textTransform:'uppercase',
+                        color: isActive ? c.color : '#f0f4ff',
+                      }}>
+                        {c.title}
+                      </span>
+                    </div>
+                    <span style={{
+                      fontFamily:"'Barlow', sans-serif", fontSize:12, lineHeight:1.4,
+                      color: isActive ? 'rgba(240,244,255,0.7)' : 'rgba(180,200,255,0.45)',
+                    }}>
+                      {c.sub}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
 
