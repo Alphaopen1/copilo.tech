@@ -145,7 +145,7 @@ function Field({ label, error, hint, children }: {
 
 /* ── Card config ────────────────────────────────────────────────────── */
 const CARDS: { id: CardId; color: string; glow: string; title: string; sub: string }[] = [
-  { id: 'bot',   color: '#60a5fa', glow: 'rgba(96,165,250,0.18)',   title: 'Mon assistant Copilo',  sub: 'Configure ton @Copilo_TaxiBot' },
+  { id: 'bot',   color: '#60a5fa', glow: 'rgba(96,165,250,0.18)',   title: 'Démarrer avec Copilo',  sub: 'Indique-moi ton nom et ton numéro' },
   { id: 'group', color: '#a78bfa', glow: 'rgba(167,139,250,0.18)',  title: 'Groupe / Canal',     sub: 'Dispatch dans ton groupe Telegram' },
   { id: 'admin', color: '#34d399', glow: 'rgba(52,211,153,0.18)',   title: 'Rejoindre en admin', sub: 'Invite Copilo dans un groupe existant' },
 ]
@@ -373,32 +373,32 @@ export default function OnboardPage() {
         {selected && (
           <div style={{ animation:'fadeUp 0.35s ease forwards', maxWidth:560 }}>
 
-            {/* ═══ CARTE A : Bot personnel ══════════════════════════ */}
+            {/* ═══ CARTE A : Démarrer avec Copilo ════════════════════ */}
             {selected === 'bot' && (
               <div style={{ padding:'36px 32px', borderRadius:20, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
 
                 {/* Header */}
                 <div style={{ fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:8, display:'flex', alignItems:'center', gap:6 }}>
-                  <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Ton assistant personnel
+                  <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Démarrer avec Copilo
                 </div>
                 <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:26, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:4 }}>
-                  @Copilo_TaxiBot
+                  Crée ton profil
                 </h2>
                 <div style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.5)', marginBottom:24, lineHeight:1.5 }}>
-                  Un seul bot, personnalisé pour toi — il reconnaît ton profil dès la première connexion.
+                  Renseigne ton prénom et ton numéro — tu seras ensuite redirigé vers @Copilo_TaxiBot sur Telegram.
                 </div>
 
                 {botResult ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:12, padding:'20px 24px', borderRadius:14, background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.3)', color:'#34d399', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, letterSpacing:'0.03em' }}>
                       <CheckCircleIcon size={22} />
-                      Profil créé — @Copilo_TaxiBot t&apos;attend !
+                      Profil enregistré !
                     </div>
-                    {botResult.message && (
-                      <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:14, color:'rgba(180,200,255,0.6)', lineHeight:1.6, margin:0 }}>{botResult.message}</p>
-                    )}
-                    <a href={botResult.telegramUrl ?? `https://t.me/${botResult.name}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'14px 28px', borderRadius:12, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', textDecoration:'none' }}>
-                      <TgIcon /> Ouvrir sur Telegram →
+                    <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:14, color:'rgba(180,200,255,0.6)', lineHeight:1.6, margin:0 }}>
+                      Dernière étape : ouvre @Copilo_TaxiBot sur Telegram et tape /start pour finaliser ton inscription.
+                    </p>
+                    <a href={botResult.telegramUrl ?? 'https://t.me/Copilo_TaxiBot'} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'14px 28px', borderRadius:12, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', textDecoration:'none' }}>
+                      <TgIcon /> Ouvrir @Copilo_TaxiBot sur Telegram →
                     </a>
                   </div>
                 ) : botApiError ? <NotReady /> : (
@@ -408,12 +408,12 @@ export default function OnboardPage() {
                       <input type="text" value={bot.firstName} onChange={e=>setBot(p=>({...p,firstName:e.target.value}))} placeholder="Marc" style={botErrs.firstName?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.firstName?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
                     </Field>
 
-                    <Field label="Numéro Telegram" error={botErrs.phone}>
+                    <Field label="Numéro de téléphone" error={botErrs.phone}>
                       <input type="tel" value={bot.phone} onChange={e=>setBot(p=>({...p,phone:e.target.value}))} placeholder="+33 6 12 34 56 78" style={botErrs.phone?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.phone?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
                     </Field>
 
                     <button type="submit" disabled={botLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:botLoading?'not-allowed':'pointer', opacity:botLoading?0.7:1 }}>
-                      {botLoading ? 'Création…' : 'Créer mon bot →'}
+                      {botLoading ? 'Enregistrement…' : 'Créer mon profil →'}
                     </button>
                   </form>
                 )}
