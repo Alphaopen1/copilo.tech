@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Script from 'next/script'
 import Nav from '@/components/Nav'
@@ -7,6 +7,57 @@ import VideoBanner from '@/components/VideoBanner'
 import Footer from '@/components/Footer'
 
 const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || ''
+
+/* ── HCaptchaWidget — rend explicitement via window.hcaptcha.render() ────
+   Le rendu déclaratif `<div class="h-captcha">` ne marche qu'au premier
+   chargement du script. Quand React démonte/remonte le widget (bascule
+   entre cartes), il faut appeler render() à la main. */
+function HCaptchaWidget() {
+  const ref = useRef<HTMLDivElement>(null)
+  const widgetId = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!ref.current || !HCAPTCHA_SITEKEY) return
+    const node = ref.current
+
+    let attempts = 0
+    const tryRender = () => {
+      const hc = (window as unknown as { hcaptcha?: {
+        render?: (el: HTMLElement, opts: Record<string, unknown>) => number
+        reset?: (id: number) => void
+        remove?: (id: number) => void
+      } }).hcaptcha
+
+      if (!hc?.render) {
+        if (attempts++ < 50) setTimeout(tryRender, 100)
+        return
+      }
+      // Si déjà rendu sur ce node, ne pas re-render
+      if (node.hasChildNodes()) return
+      try {
+        widgetId.current = hc.render(node, {
+          sitekey: HCAPTCHA_SITEKEY,
+          theme: 'dark',
+          callback: 'onHCaptchaSuccess',
+          'expired-callback': 'onHCaptchaExpired',
+        })
+      } catch {
+        /* déjà rendu, ignorer */
+      }
+    }
+    tryRender()
+
+    return () => {
+      const hc = (window as unknown as { hcaptcha?: { remove?: (id: number) => void } }).hcaptcha
+      if (hc?.remove && widgetId.current !== null) {
+        try { hc.remove(widgetId.current) } catch {}
+      }
+    }
+  }, [])
+
+  if (!HCAPTCHA_SITEKEY) return null
+  return <div ref={ref} style={{ marginTop: 4 }} />
+}
 
 /* ── SVG icons ──────────────────────────────────────────────────────── */
 function BotIcon({ color = '#60a5fa', size = 28 }: { color?: string; size?: number }) {
@@ -483,16 +534,7 @@ export default function OnboardPage() {
                       <input type="tel" value={bot.phone} onChange={e=>setBot(p=>({...p,phone:e.target.value}))} placeholder="+33 6 12 34 56 78" style={botErrs.phone?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.phone?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
                     </Field>
 
-                    {HCAPTCHA_SITEKEY && (
-                      <div
-                        className="h-captcha"
-                        data-sitekey={HCAPTCHA_SITEKEY}
-                        data-theme="dark"
-                        data-callback="onHCaptchaSuccess"
-                        data-expired-callback="onHCaptchaExpired"
-                        style={{ marginTop: 4 }}
-                      />
-                    )}
+                    <HCaptchaWidget />
 
                     <button type="submit" disabled={botLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:botLoading?'not-allowed':'pointer', opacity:botLoading?0.7:1 }}>
                       {botLoading ? 'Enregistrement…' : 'Créer mon profil →'}
@@ -543,16 +585,7 @@ export default function OnboardPage() {
                       <textarea value={group.description} onChange={e=>setGroup(p=>({...p,description:e.target.value}))} placeholder="Ex: Groupe de coordination pour les taxis de Nice" rows={3} style={{ ...fieldBase, resize:'vertical', minHeight:80 }} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.09)'}} />
                     </Field>
 
-                    {HCAPTCHA_SITEKEY && (
-                      <div
-                        className="h-captcha"
-                        data-sitekey={HCAPTCHA_SITEKEY}
-                        data-theme="dark"
-                        data-callback="onHCaptchaSuccess"
-                        data-expired-callback="onHCaptchaExpired"
-                        style={{ marginTop: 4 }}
-                      />
-                    )}
+                    <HCaptchaWidget />
 
                     <button type="submit" disabled={groupLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:groupLoading?'not-allowed':'pointer', opacity:groupLoading?0.7:1 }}>
                       {groupLoading ? 'Création…' : 'Configurer le groupe →'}
@@ -605,16 +638,7 @@ export default function OnboardPage() {
                       </ol>
                     </div>
 
-                    {HCAPTCHA_SITEKEY && (
-                      <div
-                        className="h-captcha"
-                        data-sitekey={HCAPTCHA_SITEKEY}
-                        data-theme="dark"
-                        data-callback="onHCaptchaSuccess"
-                        data-expired-callback="onHCaptchaExpired"
-                        style={{ marginTop: 4 }}
-                      />
-                    )}
+                    <HCaptchaWidget />
 
                     <button type="submit" disabled={adminLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:adminLoading?'not-allowed':'pointer', opacity:adminLoading?0.7:1 }}>
                       {adminLoading ? 'Vérification…' : "J'ai ajouté Copilo →"}
