@@ -19,7 +19,7 @@ const T = {
     titleA: 'CRÉE TON COPILO',
     titleB: 'EN 2',
     titleC: 'MINUTES.',
-    sub: 'Choisis comment tu veux utiliser Copilo dans ton activité.',
+    sub: 'Copilo répond à tes appels, dispatche tes courses et gère ta paperasse. Choisis comment le déployer dans ton activité.',
     cards: [
       {
         id: 'bot',
@@ -63,7 +63,7 @@ const T = {
     titleA: 'CREATE YOUR COPILO',
     titleB: 'IN 2',
     titleC: 'MINUTES.',
-    sub: 'Choose how you want to use Copilo in your activity.',
+    sub: 'Copilo answers your calls, dispatches your rides and handles your paperwork. Choose how to deploy it in your activity.',
     cards: [
       {
         id: 'bot',

@@ -105,10 +105,10 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
 
 const T = {
   fr: {
-    tag: '// VOCAL · TELEGRAM · IA EMBARQUÉE',
-    h1a: 'TON ASSISTANT IA',
-    h1b: 'EMBARQUÉ.',
-    sub: 'Push-to-talk. Zéro écoute passive. Courses, recettes, calendrier — tout géré pendant que tu conduis.',
+    tag: '// SECRÉTARIAT · TÉLÉPHONE · 24H/24',
+    h1a: 'COPILO DÉCROCHE.',
+    h1b: 'TU CONDUIS.',
+    sub: 'Ne perds plus une course parce que tu ne pouvais pas décrocher. Copilo répond à ta place, prend les réservations et gère tes bons de transport.',
     demo: '4 scénarios réels, en direct ↓',
     metrics: [
       { val: '0€',    label: 'pour démarrer' },
@@ -116,14 +116,14 @@ const T = {
       { val: '100%',  label: 'européen'        },
     ],
     online: 'EN LIGNE',
-    ctaInChat: 'Essayez-le maintenant →',
+    ctaInChat: 'Essayer Copilo →',
     expand: 'Voir en plein écran',
   },
   en: {
-    tag: '// VOICE · TELEGRAM · ON-BOARD AI',
-    h1a: 'YOUR ON-BOARD',
-    h1b: 'AI ASSISTANT.',
-    sub: 'Push-to-talk. Zero passive listening. Rides, revenue, calendar — all managed while you drive.',
+    tag: '// PHONE SECRETARY · TELEGRAM · 24/7',
+    h1a: 'COPILO ANSWERS.',
+    h1b: 'YOU DRIVE.',
+    sub: 'Never lose a fare because you couldn\'t pick up. Copilo answers for you, takes bookings and handles your transport receipts.',
     demo: '4 real scenarios, live ↓',
     metrics: [
       { val: '0€',    label: 'to start'  },
@@ -131,7 +131,7 @@ const T = {
       { val: '100%',  label: 'European'   },
     ],
     online: 'ONLINE',
-    ctaInChat: 'Try it now →',
+    ctaInChat: 'Try Copilo →',
     expand: 'View fullscreen',
   },
 }

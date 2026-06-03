@@ -39,7 +39,7 @@ export default function Footer({ lang }: { lang: 'fr' | 'en' }) {
               </span>
             </div>
             <p style={{ fontSize: 13, color: 'rgba(180,200,255,0.35)', lineHeight: 1.7 }}>
-              Ton copilote vocal<br />de route.
+              Ton secrétariat téléphonique<br />intelligent.
             </p>
             <a href="https://t.me/Copilo_TaxiBot" target="_blank" rel="noopener noreferrer"
                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 20, padding: '8px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none' }}>

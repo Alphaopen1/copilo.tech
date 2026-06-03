@@ -4,32 +4,32 @@ import './globals.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://copilo.tech'),
   title: {
-    default: 'Copilo — Assistant vocal IA pour chauffeurs taxi & VTC',
+    default: 'Copilo — Secrétariat téléphonique IA pour taxi & VTC',
     template: '%s | Copilo',
   },
   description:
-    'Copilo est l\'assistant vocal Telegram pour chauffeurs de taxi et VTC. Gérez vos courses, calculez vos recettes, synchronisez votre calendrier — en push-to-talk, 100 % chiffré, hébergé en Europe.',
+    'Copilo répond au téléphone à votre place quand vous conduisez. Ne perdez plus une réservation. Courses, bons de transport et exports CPAM gérés automatiquement sur Telegram — 100 % européen, chiffré de bout en bout.',
   keywords: [
-    'assistant vocal taxi', 'VTC IA', 'Copilo', 'bot Telegram taxi',
-    'recettes chauffeur', 'gestion courses taxi', 'assistant IA chauffeur',
-    'vocal push-to-talk', 'RGPD taxi', 'Telegram bot VTC',
+    'secrétariat téléphonique taxi', 'répondre aux appels en conduisant', 'ne plus manquer un appel taxi',
+    'assistant téléphonique VTC', 'Copilo', 'bot Telegram taxi', 'réservation automatique taxi',
+    'gestion bons de transport', 'export CPAM taxi', 'RGPD taxi', 'Telegram bot VTC',
   ],
   authors: [{ name: 'Copilo', url: 'https://copilo.tech' }],
   creator: 'Copilo',
   openGraph: {
-    title: 'Copilo — Assistant vocal IA pour chauffeurs taxi & VTC',
+    title: 'Copilo — Secrétariat téléphonique IA pour taxi & VTC',
     description:
-      'Push-to-talk. Zéro écoute passive. Courses, calendrier, recettes calculées automatiquement. 100 % européen, chiffré de bout en bout.',
+      'Ne perdez plus une course parce que vous conduisiez. Copilo décroche à votre place, prend les réservations et gère vos bons de transport — 24h/24, sur Telegram.',
     url: 'https://copilo.tech',
     siteName: 'Copilo',
     type: 'website',
     locale: 'fr_FR',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Copilo — Assistant vocal taxi & VTC' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Copilo — Secrétariat téléphonique taxi & VTC' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Copilo — Assistant vocal IA pour chauffeurs taxi & VTC',
-    description: 'Push-to-talk. Courses, calendrier, recettes auto. 100 % chiffré EU.',
+    title: 'Copilo — Secrétariat téléphonique IA pour taxi & VTC',
+    description: 'Copilo décroche. Tu conduis. Réservations automatiques, bons de transport, export CPAM — sur Telegram.',
     images: ['/og-image.png'],
     creator: '@CopiloBotFR',
   },
@@ -49,7 +49,7 @@ const jsonLd = {
       '@id': 'https://copilo.tech/#website',
       url: 'https://copilo.tech',
       name: 'Copilo',
-      description: 'Assistant vocal IA pour professionnels de la route',
+      description: 'Secrétariat téléphonique IA pour chauffeurs de taxi et VTC',
       inLanguage: 'fr-FR',
     },
     {
@@ -68,7 +68,7 @@ const jsonLd = {
       applicationCategory: 'BusinessApplication',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR', description: '3 mois gratuits' },
       description:
-        'Assistant vocal IA pour chauffeurs de taxi et VTC. Gestion des courses, calcul des recettes, calendrier synchronisé, dispatch de courses en groupe Telegram.',
+        'Secrétariat téléphonique IA pour chauffeurs de taxi et VTC. Répond aux appels, prend les réservations, gère les bons de transport et les exports CPAM — 24h/24 sur Telegram.',
     },
   ],
 }
