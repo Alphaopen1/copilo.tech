@@ -1,13 +1,71 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import Script from 'next/script'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import Simulator from '@/components/Simulator'
 
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || ''
+
+type HCaptchaApi = {
+  render?: (el: HTMLElement, opts: Record<string, unknown>) => number
+  remove?: (id: number) => void
+  reset?: (id: number) => void
+}
+function getHcaptcha(): HCaptchaApi | null {
+  const w = window as unknown as { hcaptcha?: HCaptchaApi }
+  return w.hcaptcha?.render ? w.hcaptcha : null
+}
+
+function HCaptchaGate({ onPass }: { onPass: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const widgetId = useRef<number | null>(null)
+  useEffect(() => {
+    if (!ref.current || !HCAPTCHA_SITEKEY) return
+    const node = ref.current
+    let cancelled = false
+    let intervalId: ReturnType<typeof setInterval> | null = null
+    const w = window as unknown as { __simCaptchaOk?: () => void }
+    w.__simCaptchaOk = onPass
+    const doRender = () => {
+      const hc = getHcaptcha()
+      if (!hc?.render || cancelled || widgetId.current !== null) return
+      try {
+        widgetId.current = hc.render(node, {
+          sitekey: HCAPTCHA_SITEKEY,
+          theme: 'dark',
+          callback: '__simCaptchaOk',
+        })
+        if (intervalId) { clearInterval(intervalId); intervalId = null }
+      } catch (err) {
+        console.warn('[hCaptcha sim] render failed', err)
+      }
+    }
+    doRender()
+    if (widgetId.current === null) {
+      intervalId = setInterval(doRender, 200)
+      setTimeout(() => { if (intervalId) { clearInterval(intervalId); intervalId = null } }, 10000)
+    }
+    return () => {
+      cancelled = true
+      if (intervalId) clearInterval(intervalId)
+      const hc = getHcaptcha()
+      if (hc?.remove && widgetId.current !== null) {
+        try { hc.remove(widgetId.current) } catch {}
+      }
+      widgetId.current = null
+    }
+  }, [onPass])
+  if (!HCAPTCHA_SITEKEY) return null
+  return <div ref={ref} style={{ marginTop: 12 }} />
+}
+
 export default function SimulateurPage() {
   const [lang, setLang] = useState<'fr' | 'en'>('fr')
+  const [verified, setVerified] = useState(!HCAPTCHA_SITEKEY)
   return (
     <>
+      {HCAPTCHA_SITEKEY && <Script src="https://js.hcaptcha.com/1/api.js" strategy="afterInteractive" async defer />}
       <div className="stars-bg" />
       <Nav lang={lang} setLang={setLang} linkPrefix="/" />
 
@@ -28,7 +86,24 @@ export default function SimulateurPage() {
             départemental, majorations et transport partagé.
           </p>
 
-          <Simulator />
+          {verified ? (
+            <Simulator />
+          ) : (
+            <div style={{
+              padding: '24px 22px', borderRadius: 14,
+              background: 'rgba(29,92,255,0.06)', border: '1px solid rgba(29,92,255,0.22)',
+              fontFamily: "'Barlow', sans-serif", color: 'rgba(210,224,255,0.85)',
+            }}>
+              <div className="mono" style={{ fontSize: 11, letterSpacing: '0.14em', color: 'rgba(0,207,255,0.7)', marginBottom: 8, textTransform: 'uppercase' }}>
+                // VÉRIFICATION ANTI-BOT
+              </div>
+              <p style={{ margin: '0 0 10px', fontSize: 15, lineHeight: 1.6 }}>
+                Confirme que tu n&apos;es pas un robot pour accéder au calculateur interactif —
+                <strong> les barèmes et règles détaillés ci-dessous restent accessibles librement.</strong>
+              </p>
+              <HCaptchaGate onPass={() => setVerified(true)} />
+            </div>
+          )}
 
           {/* ── Contenu SEO : règles de calcul ───────────────────────── */}
           <section style={{ marginTop: 64, fontFamily: "'Barlow', sans-serif", color: 'rgba(210,224,255,0.82)', lineHeight: 1.75 }}>
