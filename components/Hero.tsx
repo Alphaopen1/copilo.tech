@@ -105,10 +105,10 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
 
 const T = {
   fr: {
-    tag: '// TU CONDUIS · COPILO GÈRE',
+    tag: '// ASSISTANT TAXI & VTC · TÉLÉPHONE 24H/24',
     h1a: 'TU CONDUIS.',
     h1b: 'COPILO GÈRE LE RESTE.',
-    sub: 'Copilo décroche au téléphone, prend les réservations, gère tes bons de transport, ton calendrier et tes exports CPAM. De A à Z.',
+    sub: 'Secrétariat téléphonique IA pour taxis conventionnés CPAM et VTC indépendants : appels, réservations, bons de transport, calendrier et exports comptables — sur Telegram.',
     demo: '4 scénarios réels, en direct ↓',
     metrics: [
       { val: '0€',    label: 'pour démarrer' },
@@ -120,10 +120,10 @@ const T = {
     expand: 'Voir en plein écran',
   },
   en: {
-    tag: '// YOU DRIVE · COPILO HANDLES',
+    tag: '// TAXI & PHV ASSISTANT · 24/7 PHONE',
     h1a: 'YOU DRIVE.',
     h1b: 'COPILO HANDLES THE REST.',
-    sub: 'Copilo answers your phone, takes bookings, manages your transport receipts, your calendar and your accounting exports. End to end.',
+    sub: 'AI phone secretary for independent taxi and PHV drivers: calls, bookings, transport receipts, calendar and accounting exports — on Telegram.',
     demo: '4 real scenarios, live ↓',
     metrics: [
       { val: '0€',    label: 'to start'  },

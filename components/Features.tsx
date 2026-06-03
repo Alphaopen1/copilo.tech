@@ -23,8 +23,8 @@ type Feature = {
 const T: { fr: { label: string; title: string; sub: string; items: Feature[] }; en: { label: string; title: string; sub: string; items: Feature[] } } = {
   fr: {
     label: '// CAPACITÉS',
-    title: 'TOUT CE DONT TU AS BESOIN.',
-    sub: 'Rien de superflu. Tout pensé pour les pros de la route.',
+    title: 'TOUT CE DONT UN CHAUFFEUR TAXI OU VTC A BESOIN.',
+    sub: 'Rien de superflu. Tout pensé pour les pros de la route, taxi conventionné CPAM ou VTC indépendant.',
     items: [
       { iconKey: 'mic',      color: '#1d5cff', glow: 'rgba(29,92,255,0.15)',  title: 'Téléphone & réservations 24h/24',  desc: 'Copilo décroche pendant que tu conduis. Il transcrit l\'appel, crée la course, envoie un SMS au client et l\'ajoute à ton agenda — pour ne jamais perdre une réservation.' },
       { iconKey: 'lock',     color: '#7c3aed', glow: 'rgba(124,58,237,0.15)', title: 'Chiffrement bout-en-bout',  desc: 'HKDF + Fernet. Hébergé en Europe. Aucun tiers, aucune fuite. Effacement RGPD sur demande.' },
@@ -36,8 +36,8 @@ const T: { fr: { label: string; title: string; sub: string; items: Feature[] }; 
   },
   en: {
     label: '// CAPABILITIES',
-    title: 'EVERYTHING YOU NEED.',
-    sub: 'No bloat. Built entirely for road professionals.',
+    title: 'EVERYTHING A TAXI OR PHV DRIVER NEEDS.',
+    sub: 'No bloat. Built for road professionals — independent taxi or PHV.',
     items: [
       { iconKey: 'mic',      color: '#1d5cff', glow: 'rgba(29,92,255,0.15)',  title: '24/7 Calls & Bookings',      desc: 'Copilo picks up while you\'re driving. It transcribes the call, creates the ride, sends a confirmation SMS to the client and adds it to your calendar — never miss a booking.' },
       { iconKey: 'lock',     color: '#7c3aed', glow: 'rgba(124,58,237,0.15)', title: 'End-to-end encryption',    desc: 'HKDF + Fernet. Hosted in Europe. No third parties, no leaks. GDPR erasure on request.' },
