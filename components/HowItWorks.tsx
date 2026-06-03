@@ -19,7 +19,7 @@ const T = {
     titleA: 'CRÉE TON COPILO',
     titleB: 'EN 2',
     titleC: 'MINUTES.',
-    sub: 'Copilo répond à tes appels, dispatche tes courses et gère ta paperasse. Choisis comment le déployer dans ton activité.',
+    sub: 'Tu conduis, Copilo gère le reste : appels, réservations, BT, calendrier, exports CPAM. Choisis comment le déployer.',
     cards: [
       {
         id: 'bot',
@@ -63,7 +63,7 @@ const T = {
     titleA: 'CREATE YOUR COPILO',
     titleB: 'IN 2',
     titleC: 'MINUTES.',
-    sub: 'Copilo answers your calls, dispatches your rides and handles your paperwork. Choose how to deploy it in your activity.',
+    sub: 'You drive, Copilo handles the rest: calls, bookings, receipts, calendar, accounting exports. Choose how to deploy it.',
     cards: [
       {
         id: 'bot',

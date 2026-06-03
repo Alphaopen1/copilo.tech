@@ -105,10 +105,10 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
 
 const T = {
   fr: {
-    tag: '// SECRÉTARIAT · TÉLÉPHONE · 24H/24',
-    h1a: 'COPILO DÉCROCHE.',
-    h1b: 'TU CONDUIS.',
-    sub: 'Ne perds plus une course parce que tu ne pouvais pas décrocher. Copilo répond à ta place, prend les réservations et gère tes bons de transport.',
+    tag: '// TU CONDUIS · COPILO GÈRE',
+    h1a: 'TU CONDUIS.',
+    h1b: 'COPILO GÈRE LE RESTE.',
+    sub: 'Copilo décroche au téléphone, prend les réservations, gère tes bons de transport, ton calendrier et tes exports CPAM. De A à Z.',
     demo: '4 scénarios réels, en direct ↓',
     metrics: [
       { val: '0€',    label: 'pour démarrer' },
@@ -120,10 +120,10 @@ const T = {
     expand: 'Voir en plein écran',
   },
   en: {
-    tag: '// PHONE SECRETARY · TELEGRAM · 24/7',
-    h1a: 'COPILO ANSWERS.',
-    h1b: 'YOU DRIVE.',
-    sub: 'Never lose a fare because you couldn\'t pick up. Copilo answers for you, takes bookings and handles your transport receipts.',
+    tag: '// YOU DRIVE · COPILO HANDLES',
+    h1a: 'YOU DRIVE.',
+    h1b: 'COPILO HANDLES THE REST.',
+    sub: 'Copilo answers your phone, takes bookings, manages your transport receipts, your calendar and your accounting exports. End to end.',
     demo: '4 real scenarios, live ↓',
     metrics: [
       { val: '0€',    label: 'to start'  },

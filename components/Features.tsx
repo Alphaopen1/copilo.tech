@@ -26,7 +26,7 @@ const T: { fr: { label: string; title: string; sub: string; items: Feature[] }; 
     title: 'TOUT CE DONT TU AS BESOIN.',
     sub: 'Rien de superflu. Tout pensé pour les pros de la route.',
     items: [
-      { iconKey: 'mic',      color: '#1d5cff', glow: 'rgba(29,92,255,0.15)',  title: 'Secrétariat téléphonique 24h/24',  desc: 'Copilo décroche à ta place quand tu conduis. Il transcrit l\'appel, crée la course, envoie un SMS de confirmation au client et l\'ajoute à ton agenda — pour ne jamais perdre une réservation.' },
+      { iconKey: 'mic',      color: '#1d5cff', glow: 'rgba(29,92,255,0.15)',  title: 'Téléphone & réservations 24h/24',  desc: 'Copilo décroche pendant que tu conduis. Il transcrit l\'appel, crée la course, envoie un SMS au client et l\'ajoute à ton agenda — pour ne jamais perdre une réservation.' },
       { iconKey: 'lock',     color: '#7c3aed', glow: 'rgba(124,58,237,0.15)', title: 'Chiffrement bout-en-bout',  desc: 'HKDF + Fernet. Hébergé en Europe. Aucun tiers, aucune fuite. Effacement RGPD sur demande.' },
       { iconKey: 'calendar', color: '#0891b2', glow: 'rgba(8,145,178,0.15)',  title: 'Google Calendar auto',      desc: 'Chaque course planifiée dans ton calendrier. Orange pour les courses partagées.' },
       { iconKey: 'euro',     color: '#059669', glow: 'rgba(5,150,105,0.15)',  title: 'Recettes automatiques',     desc: 'Calcul de ton chiffre d\'affaires en temps réel. Péages et frais appris automatiquement.' },
@@ -39,7 +39,7 @@ const T: { fr: { label: string; title: string; sub: string; items: Feature[] }; 
     title: 'EVERYTHING YOU NEED.',
     sub: 'No bloat. Built entirely for road professionals.',
     items: [
-      { iconKey: 'mic',      color: '#1d5cff', glow: 'rgba(29,92,255,0.15)',  title: '24/7 Phone Secretary',      desc: 'Copilo picks up when you\'re driving. It transcribes the call, creates the ride, sends a confirmation SMS to the client and adds it to your calendar — never miss a booking again.' },
+      { iconKey: 'mic',      color: '#1d5cff', glow: 'rgba(29,92,255,0.15)',  title: '24/7 Calls & Bookings',      desc: 'Copilo picks up while you\'re driving. It transcribes the call, creates the ride, sends a confirmation SMS to the client and adds it to your calendar — never miss a booking.' },
       { iconKey: 'lock',     color: '#7c3aed', glow: 'rgba(124,58,237,0.15)', title: 'End-to-end encryption',    desc: 'HKDF + Fernet. Hosted in Europe. No third parties, no leaks. GDPR erasure on request.' },
       { iconKey: 'calendar', color: '#0891b2', glow: 'rgba(8,145,178,0.15)',  title: 'Auto Google Calendar',     desc: 'Every scheduled ride in your calendar. Orange for shared rides.' },
       { iconKey: 'euro',     color: '#059669', glow: 'rgba(5,150,105,0.15)',  title: 'Automatic revenue',        desc: 'Real-time revenue calculation. Tolls and expenses learned automatically.' },
