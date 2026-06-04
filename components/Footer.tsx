@@ -1,5 +1,7 @@
 'use client'
 
+import CopiloOrbHero from './CopiloOrbHero'
+
 const T = {
   fr: {
     nav: [['#features','Fonctionnalités'],['#how','Comment ça marche'],['/simulateur','Simulateur'],['#waitlist','Accès']],
@@ -27,13 +29,7 @@ export default function Footer({ lang }: { lang: 'fr' | 'en' }) {
           {/* Brand */}
           <div style={{ flex: '0 0 220px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 10,
-                background: 'linear-gradient(135deg, #1d5cff 0%, #00cfff 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 18, color: '#fff',
-                boxShadow: '0 0 16px rgba(29,92,255,0.4)',
-              }}>C</div>
+              <CopiloOrbHero size={32} mood="cycle" />
               <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 18, color: '#f0f4ff', letterSpacing: '0.04em' }}>
                 COPILO<span style={{ color: '#00cfff' }}>.</span>TECH
               </span>

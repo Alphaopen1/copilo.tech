@@ -176,27 +176,40 @@ export default function CopiloOrbHero({
       </svg>
 
       <style jsx>{`
-        /* ── Halo respirant ───────────────────────────────────── */
+        /* ── Halo néon bleu rotatif (palette site copilo.tech) ───── */
         .hero-orb-halo {
           position: absolute;
-          inset: -8%;
+          inset: -12%;
           border-radius: 50%;
-          background: radial-gradient(
-            circle at center,
-            rgba(0, 207, 255, 0.18) 0%,
-            rgba(155, 61, 255, 0.10) 30%,
-            transparent 65%
+          background: conic-gradient(
+            from 0deg,
+            #1d5cff,
+            #00cfff,
+            #60a5fa,
+            #00cfff,
+            #1d5cff,
+            #0e40c0,
+            #1d5cff
           );
-          filter: blur(28px);
-          animation: hero-halo-breath 4.5s ease-in-out infinite;
+          filter: blur(32px);
+          opacity: 0.7;
+          animation:
+            hero-halo-spin 8s linear infinite,
+            hero-halo-breath 4.5s ease-in-out infinite;
           pointer-events: none;
         }
+        @keyframes hero-halo-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
         @keyframes hero-halo-breath {
-          0%, 100% { opacity: 0.55; transform: scale(0.96); }
-          50%      { opacity: 1;    transform: scale(1.06); }
+          0%, 100% { opacity: 0.55; filter: blur(32px); }
+          50%      { opacity: 0.9;  filter: blur(40px); }
         }
 
-        /* ── Image PNG : juste un léger float ─────────────────── */
+        /* ── Image PNG : float + mix-blend-mode screen ──────────
+           mix-blend-mode: screen → les pixels noirs du PNG deviennent
+           transparents (carré noir invisible), l'iridescence reste. */
         .hero-orb-img {
           position: relative;
           width: 100%;
@@ -204,6 +217,7 @@ export default function CopiloOrbHero({
           object-fit: contain;
           display: block;
           z-index: 1;
+          mix-blend-mode: screen;
           animation: hero-orb-float 6s ease-in-out infinite;
         }
         @keyframes hero-orb-float {
