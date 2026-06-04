@@ -94,7 +94,7 @@ export default function BrandPage() {
             marginRight: 'auto',
           }}>
             💡 Pour remplacer l'orbe par ta version exacte : sauve l'image sous
-            <code style={{ color: '#00cfff' }}> copilo.tech/public/copilo-orb-hero.png</code>
+            <code style={{ color: '#00cfff' }}> copilo.tech/public/copilo-orb-blank.png</code>
           </p>
         </Section>
 
