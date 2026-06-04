@@ -326,23 +326,18 @@ export default function CopiloIntro({
    reconstitué par les couleurs uniques de chaque lettre adjacente.
    ──────────────────────────────────────────────────────────────────── */
 
-// Le gradient commence sur le PREMIER "o" (index 1) et atteint 9/10
-// de la transition Ice → Blue sur le "h" final (index 10). "C" reste
-// blanc Ice pur.
-const GRADIENT_START_INDEX = 1   // premier "o"
-const GRADIENT_END_RATIO   = 0.9 // 90 % de la transition sur "h"
+const WHITE_PREFIX_LEN = 2  // "Co" → blanc
 
 const COLOR_ICE  = { r: 240, g: 244, b: 255 }   // #f0f4ff
 const COLOR_CYAN = { r:   0, g: 207, b: 255 }   // #00cfff
-// Bleu adouci : moins saturé que #1d5cff, tire vers un bleu ciel premium
-const COLOR_BLUE = { r:  74, g: 134, b: 255 }   // #4a86ff
+const COLOR_BLUE = { r:  29, g:  92, b: 255 }   // #1d5cff
 
 function getCharColor(index: number, total: number): string {
-  if (index < GRADIENT_START_INDEX) return 'rgb(240, 244, 255)'  // Ice pur
+  if (index < WHITE_PREFIX_LEN) return 'rgb(240, 244, 255)'  // Ice
 
-  // Progression linéaire de 0 (sur "o") à GRADIENT_END_RATIO (sur "h")
-  const span = Math.max(1, total - 1 - GRADIENT_START_INDEX)
-  const t = ((index - GRADIENT_START_INDEX) / span) * GRADIENT_END_RATIO
+  // Progression normalisée 0 → 1 entre "p" et la dernière lettre
+  const span = Math.max(1, total - 1 - WHITE_PREFIX_LEN)
+  const t = (index - WHITE_PREFIX_LEN) / span
 
   // 3-stops : Ice (0) → Cyan (0.5) → Blue (1)
   if (t <= 0.5) return mix(COLOR_ICE, COLOR_CYAN, t * 2)
