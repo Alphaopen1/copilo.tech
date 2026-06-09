@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useLanguage } from '@/lib/useLanguage'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import Features from '@/components/Features'
@@ -12,7 +12,7 @@ import ScrollReveal from '@/components/ScrollReveal'
 import StatBand from '@/components/StatBand'
 
 export default function Home() {
-  const [lang, setLang] = useState<'fr' | 'en'>('fr')
+  const { lang, setLang } = useLanguage('fr')
 
   return (
     <>

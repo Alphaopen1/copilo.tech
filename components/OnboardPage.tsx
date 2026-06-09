@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Script from 'next/script'
+import { useLanguage } from '@/lib/useLanguage'
 import Nav from '@/components/Nav'
 import VideoBanner from '@/components/VideoBanner'
 import Footer from '@/components/Footer'
@@ -232,7 +233,7 @@ export default function OnboardPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const [lang, setLang] = useState<'fr' | 'en'>('fr')
+  const { lang, setLang } = useLanguage('fr')
   const [selected, setSelected] = useState<CardId | null>(null)
   const [fromUrl, setFromUrl] = useState(false)
 

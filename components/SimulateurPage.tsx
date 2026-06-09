@@ -1,11 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useLanguage } from '@/lib/useLanguage'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import Simulator from '@/components/Simulator'
 
 export default function SimulateurPage() {
-  const [lang, setLang] = useState<'fr' | 'en'>('fr')
+  const { lang, setLang } = useLanguage('fr')
   return (
     <>
       <div className="stars-bg" />

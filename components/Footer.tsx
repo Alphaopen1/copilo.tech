@@ -5,14 +5,14 @@ import CopiloOrbHero from './CopiloOrbHero'
 const T = {
   fr: {
     nav: [['#features','Fonctionnalités'],['#how','Comment ça marche'],['/simulateur','Simulateur'],['#waitlist','Accès']],
-    legal: [['/mentions-legales','Mentions légales'],['/confidentialite','Confidentialité'],['#','CGU']],
+    legal: [['/mentions-legales','Mentions légales'],['/confidentialite','Confidentialité'],['/cgu','CGU']],
     copy: '© 2026 Copilo. Conçu en France.',
     rgpd: 'Chiffrement UE · RGPD · Hébergé en Europe',
     navTitle: 'Navigation', legalTitle: 'Legal',
   },
   en: {
     nav: [['#features','Features'],['#how','How it works'],['/simulateur','Simulateur'],['#waitlist','Access']],
-    legal: [['/mentions-legales','Legal'],['/confidentialite','Privacy'],['#','Terms']],
+    legal: [['/mentions-legales','Legal'],['/confidentialite','Privacy'],['/cgu','Terms']],
     copy: '© 2026 Copilo. Designed in France.',
     rgpd: 'EU Encryption · GDPR · Hosted in Europe',
     navTitle: 'Navigation', legalTitle: 'Legal',
