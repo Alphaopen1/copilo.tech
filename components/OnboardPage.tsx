@@ -681,6 +681,51 @@ export default function OnboardPage() {
             {lang === 'fr' ? 'Vois Copilo en action.' : 'See Copilo in action.'}
           </h2>
         </div>
+
+        {/* ── Les 3 piliers Copilo ──────────────────────────────────── */}
+        {!selected && (
+          <div style={{ marginBottom: 80 }}>
+            <section style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:24 }}>
+              {/* 📞 Secrétariat */}
+              <div style={{ padding:'28px 24px', borderRadius:16, background:'rgba(29,92,255,0.06)', border:'1px solid rgba(29,92,255,0.2)' }}>
+                <div style={{ fontFamily:"'DM Mono', monospace", fontSize:11, letterSpacing:'0.12em', color:'rgba(0,207,255,0.7)', marginBottom:12 }}>📞 1</div>
+                <h3 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, color:'#f0f4ff', textTransform:'uppercase', marginBottom:8 }}>
+                  {lang === 'fr' ? 'Secrétariat téléphonique' : 'Phone Secretary'}
+                </h3>
+                <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:13.5, color:'rgba(180,200,255,0.55)', lineHeight:1.65 }}>
+                  {lang === 'fr'
+                    ? 'Copilo décroche quand tu conduis. Il transcrit l\'appel, crée la course, envoie un SMS au client.'
+                    : 'Copilo picks up while you drive. It transcribes the call, creates the ride, sends a confirmation SMS.'}
+                </p>
+              </div>
+              {/* 📅 Planning */}
+              <div style={{ padding:'28px 24px', borderRadius:16, background:'rgba(8,145,178,0.06)', border:'1px solid rgba(8,145,178,0.2)' }}>
+                <div style={{ fontFamily:"'DM Mono', monospace", fontSize:11, letterSpacing:'0.12em', color:'rgba(0,207,255,0.7)', marginBottom:12 }}>📅 2</div>
+                <h3 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, color:'#f0f4ff', textTransform:'uppercase', marginBottom:8 }}>
+                  {lang === 'fr' ? 'Planning Google Calendar' : 'Google Calendar Planning'}
+                </h3>
+                <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:13.5, color:'rgba(180,200,255,0.55)', lineHeight:1.65 }}>
+                  {lang === 'fr'
+                    ? 'Chaque course planifiée dans ton agenda. Rappels, vues semaine/mois, courses partagées en orange.'
+                    : 'Every ride scheduled in your calendar. Reminders, week/month views, shared rides in orange.'}
+                </p>
+              </div>
+              {/* 🚕 Courses */}
+              <div style={{ padding:'28px 24px', borderRadius:16, background:'rgba(217,119,6,0.06)', border:'1px solid rgba(217,119,6,0.2)' }}>
+                <div style={{ fontFamily:"'DM Mono', monospace", fontSize:11, letterSpacing:'0.12em', color:'rgba(0,207,255,0.7)', marginBottom:12 }}>🚕 3</div>
+                <h3 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, color:'#f0f4ff', textTransform:'uppercase', marginBottom:8 }}>
+                  {lang === 'fr' ? 'Dispatch, BT & Argent' : 'Dispatch, Receipts & Revenue'}
+                </h3>
+                <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:13.5, color:'rgba(180,200,255,0.55)', lineHeight:1.65 }}>
+                  {lang === 'fr'
+                    ? 'Les courses que tu ne peux pas prendre partent dans ton groupe. Les BT sont lus et liés automatiquement. Récap\' CPAM.'
+                    : 'Rides you can\'t take are dispatched to your group. Receipts are read and linked automatically. CPAM exports.'}
+                </p>
+              </div>
+            </section>
+          </div>
+        )}
+
         <VideoBanner />
       </div>
 

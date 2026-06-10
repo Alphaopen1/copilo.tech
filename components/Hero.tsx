@@ -108,7 +108,7 @@ const T = {
     tag: '// ASSISTANT TAXI & VTC · TÉLÉPHONE 24H/24',
     h1a: 'TU CONDUIS.',
     h1b: 'COPILO GÈRE LE RESTE.',
-    sub: 'Secrétariat téléphonique IA pour taxis conventionnés CPAM et VTC indépendants : appels, réservations, bons de transport, calendrier et exports comptables — sur Telegram.',
+    sub: 'Secrétariat téléphonique IA pour taxis conventionnés CPAM et VTC indépendants : appels, réservations, bons de transport, calendrier et exports comptables — sur Telegram.\n\n📞 Secrétariat  ·  📅 Planning  ·  🚕 Courses & dispatch',
     demo: '4 scénarios réels, en direct ↓',
     metrics: [
       { val: '0€',    label: 'pour démarrer' },
@@ -123,7 +123,7 @@ const T = {
     tag: '// TAXI & PHV ASSISTANT · 24/7 PHONE',
     h1a: 'YOU DRIVE.',
     h1b: 'COPILO HANDLES THE REST.',
-    sub: 'AI phone secretary for independent taxi and PHV drivers: calls, bookings, transport receipts, calendar and accounting exports — on Telegram.',
+    sub: 'AI phone secretary for independent taxi and PHV drivers: calls, bookings, transport receipts, calendar and accounting exports — on Telegram.\n\n📞 Secretary  ·  📅 Planning  ·  🚕 Rides & dispatch',
     demo: '4 real scenarios, live ↓',
     metrics: [
       { val: '0€',    label: 'to start'  },
