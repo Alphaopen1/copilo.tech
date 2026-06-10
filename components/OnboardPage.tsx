@@ -432,10 +432,10 @@ export default function OnboardPage() {
               <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Démarrer avec Copilo
             </div>
             <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:26, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:4 }}>
-              Crée ton profil
+              Crée ton assistant vocal
             </h2>
             <div style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.5)', marginBottom:24, lineHeight:1.5 }}>
-              Renseigne ton prénom et ton numéro — tu seras ensuite redirigé vers @Copilo_TaxiBot sur Telegram.
+              Renseigne ton prénom et ton numéro — Copilo répondra à tes clients quand tu conduis. Tu piloteras tout depuis @Copilo_TaxiBot sur Telegram.
             </div>
 
             {botResult ? (
@@ -445,7 +445,7 @@ export default function OnboardPage() {
                   Profil enregistré !
                 </div>
                 <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:14, color:'rgba(180,200,255,0.6)', lineHeight:1.6, margin:0 }}>
-                  Dernière étape : ouvre @Copilo_TaxiBot sur Telegram et tape /start pour finaliser ton inscription.
+                  Dernière étape : ouvre @Copilo_TaxiBot sur Telegram et tape /start pour activer ton assistant vocal.
                 </p>
                 <a href={botResult.telegramUrl ?? 'https://t.me/Copilo_TaxiBot'} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'14px 28px', borderRadius:12, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', textDecoration:'none' }}>
                   <TgIcon /> Ouvrir @Copilo_TaxiBot sur Telegram →

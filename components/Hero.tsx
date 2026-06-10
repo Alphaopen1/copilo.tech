@@ -105,10 +105,10 @@ const SCENARIOS: Record<Lang, Scenario[]> = {
 
 const T = {
   fr: {
-    tag: '// ASSISTANT TAXI & VTC · TÉLÉPHONE 24H/24',
-    h1a: 'TU CONDUIS.',
-    h1b: 'COPILO GÈRE LE RESTE.',
-    sub: 'Secrétariat téléphonique IA pour taxis conventionnés CPAM et VTC indépendants : appels, réservations, bons de transport, calendrier et exports comptables — sur Telegram.\n\n📞 Secrétariat  ·  📅 Planning  ·  🚕 Courses & dispatch',
+    tag: '// ASSISTANT TÉLÉPHONIQUE INTELLIGENT POUR TAXIS & VTC',
+    h1a: 'UN ASSISTANT QUI RÉPOND À TES CLIENTS.',
+    h1b: 'TU PILOTES TOUT DEPUIS TELEGRAM.',
+    sub: 'Quand tu conduis et que tu ne peux pas répondre, Copilo décroche, écoute le client, crée la course et l\'ajoute à ton planning — le tout piloté depuis Telegram.\n\n📞 Assistant vocal  ·  📅 Planning auto  ·  🚕 Courses & dispatch',
     demo: '4 scénarios réels, en direct ↓',
     metrics: [
       { val: '0€',    label: 'pour démarrer' },
@@ -120,10 +120,10 @@ const T = {
     expand: 'Voir en plein écran',
   },
   en: {
-    tag: '// TAXI & PHV ASSISTANT · 24/7 PHONE',
-    h1a: 'YOU DRIVE.',
-    h1b: 'COPILO HANDLES THE REST.',
-    sub: 'AI phone secretary for independent taxi and PHV drivers: calls, bookings, transport receipts, calendar and accounting exports — on Telegram.\n\n📞 Secretary  ·  📅 Planning  ·  🚕 Rides & dispatch',
+    tag: '// SMART PHONE ASSISTANT FOR TAXI & PHV DRIVERS',
+    h1a: 'AN ASSISTANT THAT ANSWERS YOUR CLIENTS.',
+    h1b: 'YOU CONTROL EVERYTHING FROM TELEGRAM.',
+    sub: 'When you\'re driving and can\'t pick up, Copilo answers, listens to the client, creates the ride and adds it to your schedule — all controlled from Telegram.\n\n📞 Voice assistant  ·  📅 Auto planning  ·  🚕 Rides & dispatch',
     demo: '4 real scenarios, live ↓',
     metrics: [
       { val: '0€',    label: 'to start'  },
