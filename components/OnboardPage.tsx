@@ -408,7 +408,7 @@ export default function OnboardPage() {
       <div style={{ maxWidth:960, margin:'0 auto', position:'relative', zIndex:1 }}>
 
         {/* ── Hero ──────────────────────────────────────────────────── */}
-        <div style={{ animation:'fadeUp 0.6s ease forwards', marginBottom: selected ? 40 : 64 }}>
+        <div style={{ animation:'fadeUp 0.6s ease forwards', marginBottom: 40 }}>
           <div style={{ fontFamily:"'DM Mono', monospace", fontSize:11, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:20 }}>
             // ONBOARDING
           </div>
@@ -418,254 +418,59 @@ export default function OnboardPage() {
               en 2 minutes.
             </span>
           </h1>
-          {!selected && (
-            <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:16, color:'rgba(180,200,255,0.5)', lineHeight:1.7, maxWidth:480 }}>
-              Choisis comment tu veux utiliser Copilo dans ton activité.
-            </p>
-          )}
+          <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:16, color:'rgba(180,200,255,0.5)', lineHeight:1.7, maxWidth:480 }}>
+            Remplis ton profil, puis ouvre @Copilo_TaxiBot sur Telegram pour finaliser.
+          </p>
         </div>
 
-        {/* ── Type switcher tabs (3 mini-cartes avec explications) ───── */}
-        {selected && (
-          <div style={{ marginBottom:36 }}>
-            {/* Back button */}
-            <button
-              onClick={handleBack}
-              style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'7px 12px', borderRadius:10, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.03)', color:'rgba(180,200,255,0.5)', fontFamily:"'Barlow Condensed', sans-serif", fontSize:13, letterSpacing:'0.04em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.15s', marginBottom:16 }}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.2)';e.currentTarget.style.color='#f0f4ff'}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.color='rgba(180,200,255,0.5)'}}
-            >
-              <ChevronLeftIcon color="currentColor" /> Changer
-            </button>
+                {/* ── Formulaire unique : bot ───────────────────────────────── */}
+        <div style={{ animation:'fadeUp 0.7s ease 0.1s forwards', maxWidth:560, marginBottom: 80 }}>
+          <div style={{ padding:'36px 32px', borderRadius:20, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
 
-            {/* Type tabs — 3 mini-cartes avec titre + explication */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:10 }}>
-              {CARDS.map(c => {
-                const isActive = selected === c.id
-                return (
-                  <button
-                    key={c.id}
-                    onClick={() => handleSelectCard(c.id)}
-                    style={{
-                      display:'flex', flexDirection:'column', alignItems:'flex-start', gap:6,
-                      padding:'14px 16px', borderRadius:12, cursor:'pointer', transition:'all 0.15s',
-                      textAlign:'left',
-                      border: isActive ? `1px solid ${c.color}66` : '1px solid rgba(255,255,255,0.08)',
-                      background: isActive ? `${c.color}18` : 'rgba(255,255,255,0.02)',
-                      boxShadow: isActive ? `0 0 24px ${c.glow}` : 'none',
-                    }}
-                    onMouseEnter={e=>{ if(!isActive){ e.currentTarget.style.borderColor=`${c.color}33`; e.currentTarget.style.background=`${c.color}08` } }}
-                    onMouseLeave={e=>{ if(!isActive){ e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.background='rgba(255,255,255,0.02)' } }}
-                  >
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <CardIcon id={c.id} color={isActive ? c.color : 'rgba(180,200,255,0.5)'} size={16} />
-                      <span style={{
-                        fontFamily:"'Barlow Condensed', sans-serif", fontSize:14, fontWeight:700,
-                        letterSpacing:'0.04em', textTransform:'uppercase',
-                        color: isActive ? c.color : '#f0f4ff',
-                      }}>
-                        {c.title}
-                      </span>
-                    </div>
-                    <span style={{
-                      fontFamily:"'Barlow', sans-serif", fontSize:12, lineHeight:1.4,
-                      color: isActive ? 'rgba(240,244,255,0.7)' : 'rgba(180,200,255,0.45)',
-                    }}>
-                      {c.sub}
-                    </span>
-                  </button>
-                )
-              })}
+            {/* Header */}
+            <div style={{ fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:8, display:'flex', alignItems:'center', gap:6 }}>
+              <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Démarrer avec Copilo
             </div>
-          </div>
-        )}
+            <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:26, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:4 }}>
+              Crée ton profil
+            </h2>
+            <div style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.5)', marginBottom:24, lineHeight:1.5 }}>
+              Renseigne ton prénom et ton numéro — tu seras ensuite redirigé vers @Copilo_TaxiBot sur Telegram.
+            </div>
 
-        {/* ── Full card picker (before any selection) ───────────────── */}
-        {!selected && (
-          <div style={{ display:'flex', gap:16, flexWrap:'wrap', marginBottom:48, animation:'fadeUp 0.7s ease 0.1s forwards', opacity:0 }}>
-            {CARDS.map((c, i) => (
-              <button
-                key={c.id}
-                onClick={() => handleSelectCard(c.id)}
-                style={{ flex:'1 1 220px', minWidth:200, padding:'28px 22px', borderRadius:18, background:'rgba(255,255,255,0.03)', border:`1px solid rgba(255,255,255,0.07)`, cursor:'pointer', display:'flex', flexDirection:'column', gap:12, textAlign:'left', transition:'border-color 0.2s, transform 0.2s, box-shadow 0.2s', animationDelay:`${i*0.08}s` }}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=c.color+'55';e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow=`0 0 28px ${c.glow}`}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.07)';e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none'}}
-              >
-                <div style={{ width:52, height:52, borderRadius:14, background:c.glow, border:`1px solid ${c.color}33`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <CardIcon id={c.id} color={c.color} size={26} />
+            {botResult ? (
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'20px 24px', borderRadius:14, background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.3)', color:'#34d399', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, letterSpacing:'0.03em' }}>
+                  <CheckCircleIcon size={22} />
+                  Profil enregistré !
                 </div>
-                <div>
-                  <div style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, color:'#f0f4ff', letterSpacing:'0.02em', textTransform:'uppercase', marginBottom:4 }}>
-                    {c.title}
-                  </div>
-                  <div style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.5)', lineHeight:1.5 }}>
-                    {c.sub}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* ── Forms ─────────────────────────────────────────────────── */}
-        {selected && (
-          <div style={{ animation:'fadeUp 0.35s ease forwards', maxWidth:560 }}>
-
-            {/* ═══ CARTE A : Démarrer avec Copilo ════════════════════ */}
-            {selected === 'bot' && (
-              <div style={{ padding:'36px 32px', borderRadius:20, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
-
-                {/* Header */}
-                <div style={{ fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:8, display:'flex', alignItems:'center', gap:6 }}>
-                  <BotIcon color="rgba(0,207,255,0.7)" size={13} /> // Démarrer avec Copilo
-                </div>
-                <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:26, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:4 }}>
-                  Crée ton profil
-                </h2>
-                <div style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.5)', marginBottom:24, lineHeight:1.5 }}>
-                  Renseigne ton prénom et ton numéro — tu seras ensuite redirigé vers @Copilo_TaxiBot sur Telegram.
-                </div>
-
-                {botResult ? (
-                  <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:12, padding:'20px 24px', borderRadius:14, background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.3)', color:'#34d399', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18, letterSpacing:'0.03em' }}>
-                      <CheckCircleIcon size={22} />
-                      Profil enregistré !
-                    </div>
-                    <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:14, color:'rgba(180,200,255,0.6)', lineHeight:1.6, margin:0 }}>
-                      Dernière étape : ouvre @Copilo_TaxiBot sur Telegram et tape /start pour finaliser ton inscription.
-                    </p>
-                    <a href={botResult.telegramUrl ?? 'https://t.me/Copilo_TaxiBot'} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'14px 28px', borderRadius:12, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', textDecoration:'none' }}>
-                      <TgIcon /> Ouvrir @Copilo_TaxiBot sur Telegram →
-                    </a>
-                  </div>
-                ) : botApiError ? <NotReady /> : (
-                  <form onSubmit={submitBot} style={{ display:'flex', flexDirection:'column', gap:18 }}>
-
-                    <Field label="Ton prénom" error={botErrs.firstName}>
-                      <input type="text" value={bot.firstName} onChange={e=>setBot(p=>({...p,firstName:e.target.value}))} placeholder="Marc" style={botErrs.firstName?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.firstName?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
-                    </Field>
-
-                    <Field label="Numéro de téléphone" error={botErrs.phone}>
-                      <input type="tel" value={bot.phone} onChange={e=>setBot(p=>({...p,phone:e.target.value}))} placeholder="+33 6 12 34 56 78" style={botErrs.phone?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.phone?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
-                    </Field>
-
-                    <HCaptchaWidget />
-
-                    <button type="submit" disabled={botLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:botLoading?'not-allowed':'pointer', opacity:botLoading?0.7:1 }}>
-                      {botLoading ? 'Enregistrement…' : 'Créer mon profil →'}
-                    </button>
-                  </form>
-                )}
+                <p style={{ fontFamily:"'Barlow', sans-serif", fontSize:14, color:'rgba(180,200,255,0.6)', lineHeight:1.6, margin:0 }}>
+                  Dernière étape : ouvre @Copilo_TaxiBot sur Telegram et tape /start pour finaliser ton inscription.
+                </p>
+                <a href={botResult.telegramUrl ?? 'https://t.me/Copilo_TaxiBot'} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'14px 28px', borderRadius:12, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', textDecoration:'none' }}>
+                  <TgIcon /> Ouvrir @Copilo_TaxiBot sur Telegram →
+                </a>
               </div>
-            )}
+            ) : botApiError ? <NotReady /> : (
+              <form onSubmit={submitBot} style={{ display:'flex', flexDirection:'column', gap:18 }}>
 
-            {/* ═══ CARTE B : Groupe / Canal ═════════════════════════ */}
-            {selected === 'group' && (
-              <div style={{ padding:'36px 32px', borderRadius:20, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:12 }}>
-                  <GroupIcon color="rgba(0,207,255,0.7)" size={14} /> // Groupe / Canal
-                </div>
-                <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:28, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:24 }}>
-                  Nouveau groupe Copilo
-                </h2>
+                <Field label="Ton prénom" error={botErrs.firstName}>
+                  <input type="text" value={bot.firstName} onChange={e=>setBot(p=>({...p,firstName:e.target.value}))} placeholder="Marc" style={botErrs.firstName?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.firstName?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
+                </Field>
 
-                {groupResult ? (
-                  <GroupWizard
-                    groupName={group.groupName.trim()}
-                    inviteLink={groupResult.inviteLink}
-                    step={wizardStep}
-                    onStep={setWizardStep}
-                  />
-                ) : groupApiError ? <NotReady /> : (
-                  <form onSubmit={submitGroup} style={{ display:'flex', flexDirection:'column', gap:18 }}>
-                    <Field label="Nom du groupe" error={groupErrs.groupName}>
-                      <input type="text" value={group.groupName} onChange={e=>setGroup(p=>({...p,groupName:e.target.value}))} placeholder="Taxis Côte d'Azur" style={groupErrs.groupName?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=groupErrs.groupName?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
-                    </Field>
+                <Field label="Numéro de téléphone" error={botErrs.phone}>
+                  <input type="tel" value={bot.phone} onChange={e=>setBot(p=>({...p,phone:e.target.value}))} placeholder="+33 6 12 34 56 78" style={botErrs.phone?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=botErrs.phone?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
+                </Field>
 
-                    {/* Type radio */}
-                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                      <span style={{ fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)' }}>Type</span>
-                      <div style={{ display:'flex', gap:10 }}>
-                        {([['private','Groupe privé',<LockSmIcon key="l" color={group.type==='private'?'#f0f4ff':'rgba(180,200,255,0.5)'} />],['public','Canal public',<BroadcastIcon key="b" color={group.type==='public'?'#f0f4ff':'rgba(180,200,255,0.5)'} />]] as const).map(([val,label,icon])=>(
-                          <label key={val} style={{ flex:1, display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:10, background:group.type===val?'rgba(29,92,255,0.12)':'rgba(255,255,255,0.03)', border:`1px solid ${group.type===val?'rgba(29,92,255,0.45)':'rgba(255,255,255,0.09)'}`, cursor:'pointer', transition:'all 0.15s' }}>
-                            <input type="radio" name="groupType" value={val} checked={group.type===val} onChange={()=>setGroup(p=>({...p,type:val}))} style={{accentColor:'#1d5cff'}} />
-                            {icon}
-                            <span style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:group.type===val?'#f0f4ff':'rgba(180,200,255,0.5)' }}>{label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                <HCaptchaWidget />
 
-                    <Field label="Description (optionnel)">
-                      <textarea value={group.description} onChange={e=>setGroup(p=>({...p,description:e.target.value}))} placeholder="Ex: Groupe de coordination pour les taxis de Nice" rows={3} style={{ ...fieldBase, resize:'vertical', minHeight:80 }} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.09)'}} />
-                    </Field>
-
-                    <HCaptchaWidget />
-
-                    <button type="submit" disabled={groupLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:groupLoading?'not-allowed':'pointer', opacity:groupLoading?0.7:1 }}>
-                      {groupLoading ? 'Création…' : 'Configurer le groupe →'}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* ═══ CARTE C : Admin existant ═════════════════════════ */}
-            {selected === 'admin' && (
-              <div style={{ padding:'36px 32px', borderRadius:20, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, fontFamily:"'DM Mono', monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(0,207,255,0.7)', marginBottom:12 }}>
-                  <PlusCircleIcon color="rgba(0,207,255,0.7)" size={14} /> // Admin existant
-                </div>
-                <h2 style={{ fontFamily:"'Barlow Condensed', sans-serif", fontWeight:800, fontSize:28, color:'#f0f4ff', textTransform:'uppercase', letterSpacing:'0.01em', marginBottom:24 }}>
-                  Rejoindre en admin
-                </h2>
-
-                {adminResult ? (
-                  <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:12, padding:'20px 24px', borderRadius:14, background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.3)', color:'#34d399', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:18 }}>
-                      <CheckCircleIcon size={22} /> Suis les étapes ci-dessous
-                    </div>
-                    {adminResult.steps && (
-                      <div style={{ padding:'14px 18px', borderRadius:10, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', display:'flex', flexDirection:'column', gap:8 }}>
-                        {adminResult.steps.map((s,i)=>(
-                          <div key={i} style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.7)', lineHeight:1.5 }}>{s}</div>
-                        ))}
-                      </div>
-                    )}
-                    {adminResult.addBotUrl && (
-                      <a href={adminResult.addBotUrl} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'14px 28px', borderRadius:12, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', textDecoration:'none' }}>
-                        <TgIcon /> Ajouter @Copilo_TaxiBot →
-                      </a>
-                    )}
-                  </div>
-                ) : adminApiError ? <NotReady /> : (
-                  <form onSubmit={submitAdmin} style={{ display:'flex', flexDirection:'column', gap:18 }}>
-                    <Field label="Groupe Telegram" error={adminErrs.groupHandle}>
-                      <input type="text" value={admin.groupHandle} onChange={e=>setAdmin({groupHandle:e.target.value})} placeholder="@MonGroupe ou t.me/MonGroupe" style={adminErrs.groupHandle?fieldError:fieldBase} onFocus={e=>{e.target.style.borderColor='rgba(29,92,255,0.5)'}} onBlur={e=>{e.target.style.borderColor=adminErrs.groupHandle?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.09)'}} />
-                    </Field>
-
-                    <div style={{ padding:'16px 18px', borderRadius:12, background:'rgba(29,92,255,0.06)', border:'1px solid rgba(29,92,255,0.2)', display:'flex', flexDirection:'column', gap:8 }}>
-                      <div style={{ fontFamily:"'DM Mono', monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(0,207,255,0.6)' }}>Instructions</div>
-                      <ol style={{ paddingLeft:18, display:'flex', flexDirection:'column', gap:6 }}>
-                        {['Ouvre ton groupe Telegram', <span key="2">Recherche <strong style={{color:'#f0f4ff'}}>@Copilo_TaxiBot</strong> et ajoute-le</span>, 'Donne-lui les droits admin (messages)', 'Reviens ici et clique sur le bouton ci-dessous'].map((step,i)=>(
-                          <li key={i} style={{ fontFamily:"'Barlow', sans-serif", fontSize:13, color:'rgba(180,200,255,0.6)', lineHeight:1.5 }}>{step}</li>
-                        ))}
-                      </ol>
-                    </div>
-
-                    <HCaptchaWidget />
-
-                    <button type="submit" disabled={adminLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:adminLoading?'not-allowed':'pointer', opacity:adminLoading?0.7:1 }}>
-                      {adminLoading ? 'Vérification…' : "J'ai ajouté Copilo →"}
-                    </button>
-                  </form>
-                )}
-              </div>
+                <button type="submit" disabled={botLoading} className="btn-primary" style={{ padding:'14px 24px', borderRadius:12, border:'none', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:17, letterSpacing:'0.06em', textTransform:'uppercase', color:'#fff', cursor:botLoading?'not-allowed':'pointer', opacity:botLoading?0.7:1 }}>
+                  {botLoading ? 'Enregistrement…' : 'Créer mon profil →'}
+                </button>
+              </form>
             )}
           </div>
-        )}
-      </div>
+        </div>
 
       {/* Spin keyframe for SpinnerIcon */}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
@@ -683,7 +488,6 @@ export default function OnboardPage() {
         </div>
 
         {/* ── Les 3 piliers Copilo ──────────────────────────────────── */}
-        {!selected && (
           <div style={{ marginBottom: 80 }}>
             <section style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:24 }}>
               {/* 📞 Secrétariat */}
