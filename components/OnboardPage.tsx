@@ -472,9 +472,8 @@ export default function OnboardPage() {
           </div>
         </div>
 
-      {/* Spin keyframe for SpinnerIcon */}
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-    </main>
+      </div>
+      </main>
 
       {/* ── Vidéo de présentation (was missing on /onboard) ── */}
       <div style={{ position:'relative', zIndex:1 }}>
@@ -528,7 +527,6 @@ export default function OnboardPage() {
               </div>
             </section>
           </div>
-        )}
 
         <VideoBanner />
       </div>

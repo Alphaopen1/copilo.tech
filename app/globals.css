@@ -196,6 +196,12 @@ body {
   40%       { opacity: 1; }
 }
 
+/* ── SPIN (used by SpinnerIcon) ──────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ── FADE IN ─────────────────────────────────── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
